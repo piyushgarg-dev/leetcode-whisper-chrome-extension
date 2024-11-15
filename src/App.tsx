@@ -25,24 +25,26 @@ const Popup: React.FC = () => {
   };
 
   return (
-    <div className="dark relative w-[350px] h-[550px] bg-black text-white p-4">
+    <div className='dark relative w-[350px] h-[550px] bg-black text-white p-4'>
       {isLoaded && (
         <div>
-          <div className="w-full mt-10">
-            <img className="mx-auto" src={leetCode} width={150} height={150} />
+          <div className='w-full mt-10'>
+            <img className='mx-auto' src={leetCode} width={150} height={150} />
           </div>
-          <div className="text-center">
-            <h1 className="text-white font-bold text-2xl">LeetCode Whisper</h1>
+          <div className='text-center'>
+            <h1 className='text-white font-bold text-2xl'>LeetCode Whisper</h1>
           </div>
-          <div className="mt-10 flex flex-col gap-2">
-            <label htmlFor="text" className='text-white font-bold text-xl'>Enter Your OpenAI API key</label>
+          <div className='mt-10 flex flex-col gap-2'>
+            <label htmlFor='text' className='text-white font-bold text-xl'>
+              Enter Your OpenAI API key
+            </label>
             <Input
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
-              placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              placeholder='Ex. 0aBbnGgzXXXXXX'
+              className='bg-white outline-none text-black'
             />
-            <Button onClick={handleAddOpenAPIKey} className="dark">
+            <Button onClick={handleAddOpenAPIKey} className='dark'>
               Save
             </Button>
           </div>
