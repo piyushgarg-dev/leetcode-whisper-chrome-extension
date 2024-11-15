@@ -55,8 +55,6 @@ FOLLOW these steps to generate your response:
 
 Keep the response short and crisp
 
-Ouput JSON Format: 
-{ "output" : Markdown String }
 
 Problem Statement:
 \'\'\'

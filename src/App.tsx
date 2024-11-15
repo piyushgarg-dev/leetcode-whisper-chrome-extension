@@ -1,16 +1,16 @@
-import React from 'react';
-import leetCode from '@/assets/leetcode.png';
-import { Input } from './components/ui/input';
-import { Button } from './components/ui/button';
+import React from "react";
+import leetCode from "@/assets/leetcode.png";
+import { Input } from "./components/ui/input";
+import { Button } from "./components/ui/button";
 
 const Popup: React.FC = () => {
-  const [openAIKey, setOpenAIKey] = React.useState('');
+  const [openAIKey, setOpenAIKey] = React.useState("");
   const [isLoaded, setIsLoaded] = React.useState(false);
 
   React.useEffect(() => {
     (async function loadOpenAPIKey() {
       if (!chrome) return;
-      const apiKeyFromStorage = (await chrome.storage.local.get('apiKey')) as {
+      const apiKeyFromStorage = (await chrome.storage.local.get("apiKey")) as {
         apiKey?: string;
       };
       if (apiKeyFromStorage.apiKey) setOpenAIKey(apiKeyFromStorage.apiKey);
@@ -35,12 +35,14 @@ const Popup: React.FC = () => {
             <h1 className="text-white font-bold text-2xl">LeetCode Whisper</h1>
           </div>
           <div className="mt-10 flex flex-col gap-2">
-            <label htmlFor="text" className='text-white font-bold text-xl'>Enter Your OpenAI API key</label>
+            <label htmlFor="text" className="text-white font-bold text-xl">
+              Enter Your OpenAI API key
+            </label>
             <Input
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              className="bg-white outline-none"
             />
             <Button onClick={handleAddOpenAPIKey} className="dark">
               Save
