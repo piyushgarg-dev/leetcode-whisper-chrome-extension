@@ -20,8 +20,10 @@ const Popup: React.FC = () => {
 
   const handleAddOpenAPIKey = async () => {
     if (openAIKey) {
-      await chrome.storage.local.set({ apiKey: openAIKey });
+      await chrome.storage.local.set({ apiKey: openAIKey });      
     }
+    
+    window.close();
   };
 
   return (
@@ -40,7 +42,7 @@ const Popup: React.FC = () => {
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              className='bg-white text-black  outline-none'
             />
             <Button onClick={handleAddOpenAPIKey} className="dark">
               Save
