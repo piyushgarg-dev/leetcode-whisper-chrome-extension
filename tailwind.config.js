@@ -5,6 +5,10 @@ export default {
 
   theme: {
   	extend: {
+		fontFamily: {
+			dancing: ['Dancing Script', 'cursive'],
+		},
+
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
