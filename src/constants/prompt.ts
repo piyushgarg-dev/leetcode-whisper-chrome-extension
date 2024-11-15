@@ -53,15 +53,18 @@ FOLLOW these steps to generate your response:
 - DO NOT GIVE UNNECESSARY OR MISLEADING ADVICE THAT COULD CONFUSE THE USER.
 - DO NOT OVER-SIMPLIFY TO THE POINT OF LOSING RELEVANT DETAIL; TAILOR THE COMPLEXITY BASED ON USER FEEDBACK.
 
-Keep the response short and crisp
+Keep the response short and crisp.
 
-Ouput JSON Format: 
-{ "output" : Markdown String }
+Output JSON Format: 
+{
+  "output": "Markdown String",
+  "code": "Your code snippet here"
+}
 
 Problem Statement:
-\'\'\'
+\`\`\`
 {{problem_statement}}
-\'\'\'
+\`\`\`
 
 User Programming Language: {{programming_language}}
 
@@ -69,5 +72,4 @@ User Code:
 \`\`\`{{programming_language}}
 {{user_code}}
 \`\`\`
-
 `;
