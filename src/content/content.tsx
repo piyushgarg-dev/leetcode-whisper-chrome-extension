@@ -10,6 +10,8 @@ import { extractCode } from './util';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Markdown from 'react-markdown';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 
 function createOpenAISDK(apiKey: string) {
   return new OpenAI({
@@ -38,55 +40,80 @@ function ChatBox({ context }: ChatBoxProps) {
   const chatBoxRef = useRef<HTMLDivElement>(null);
 
   const handleGenerateAIResponse = async () => {
-    const openAIAPIKey = (await chrome.storage.local.get('apiKey')) as {
-      apiKey?: string;
-    };
-
-    if (!openAIAPIKey.apiKey) return alert('OpenAI API Key is required');
-
-    const openai = createOpenAISDK(openAIAPIKey.apiKey);
-
+    const { apiKey, selectedModel } = await chrome.storage.local.get([
+      'apiKey',
+      'selectedModel',
+    ]);
+  
+    if (!apiKey || !selectedModel) {
+      return alert('API Key or Model name is required');
+    }
+  
     const userMessage = value;
     const userCurrentCodeContainer = document.querySelector('.view-line');
-
+  
     const extractedCode = extractCode(
       userCurrentCodeContainer?.innerHTML ?? ''
     );
-
+  
     const systemPromptModified = SYSTEM_PROMPT.replace(
       '{{problem_statement}}',
       context.problemStatement
     )
       .replace('{{programming_language}}', context.programmingLanguage)
       .replace('{{user_code}}', extractedCode);
-
-    const apiResponse = await openai.chat.completions.create({
-      model: 'chatgpt-4o-latest',
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPromptModified },
-        ...chatHistory.map(
-          (chat) =>
-            ({
-              role: chat.role,
-              content: chat.message,
-            } as ChatCompletionMessageParam)
-        ),
-        { role: 'user', content: userMessage },
-      ],
-    });
-
-    if (apiResponse.choices[0].message.content) {
-      const result = JSON.parse(apiResponse.choices[0].message.content);
-      if ('output' in result) {
+  
+    if (selectedModel === 'chatgpt') {
+      const openai = createOpenAISDK(apiKey);
+  
+      const apiResponse = await openai.chat.completions.create({
+        model: 'chatgpt-4o-latest',
+        messages: [
+          { role: 'system', content: systemPromptModified },
+          ...chatHistory.map(
+            (chat) =>
+              ({
+                role: chat.role,
+                content: chat.message,
+              } as ChatCompletionMessageParam)
+          ),
+          { role: 'user', content: userMessage },
+        ],
+      });
+  
+      const result = apiResponse.choices[0].message?.content;
+      if (result) {
         setChatHistory((prev) => [
           ...prev,
-          { message: result.output, role: 'user', type: 'markdown' },
+          { message: result, role: 'assistant', type: 'markdown' },
         ]);
-        chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (selectedModel === 'gemini') {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  
+      const prompt = `${systemPromptModified}\nUser message: ${userMessage}`;
+      const apiResponse = await model.generateContent( prompt );
+  
+      const result = apiResponse?.response?.text() ;
+      console.log({result})
+      if (result) {
+        const cleanResult = result.replace(/```json\n|```/g, '').trim();
+        const parsedResult = JSON.parse(cleanResult); 
+        const output = parsedResult?.output || "No output found";
+        console.log({output})
+        setChatHistory((prev) => [
+          ...prev,
+          { message: output, role: 'assistant', type: 'markdown' },
+        ]);
       }
     }
+  
+    chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+  
+   
+   
 
   const onSendMessage = () => {
     setChatHistory((prev) => [
@@ -110,11 +137,14 @@ function ChatBox({ context }: ChatBoxProps) {
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
             <div className="w-[100%]">
-              <p>{message.role.toLocaleUpperCase()}</p>
+              <p className='font-bold'>{message.role.toLocaleUpperCase()}</p>
               {message.type === 'markdown' ? (
+                <div className='p-1'>
                 <Markdown>{message.message}</Markdown>
+                </div>
               ) : (
-                <p>{message.message}</p>
+                
+                <p className='p-1'>{message.message}</p>
               )}
             </div>
           </div>
@@ -143,11 +173,13 @@ const ContentPage: React.FC = () => {
   const metaDescriptionEl = document.querySelector('meta[name=description]');
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
-
+   // With the help of this we can easily detect the programming language
+   const programmingLanguage = document?.querySelector('#editor')?.firstChild?.textContent?.split("Auto").join("")  as string;
+   
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
-        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
+        <ChatBox context={{ problemStatement, programmingLanguage: programmingLanguage }} />
       )}
       <div className="flex justify-end">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
