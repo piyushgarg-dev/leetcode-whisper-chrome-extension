@@ -13,3 +13,50 @@ export function extractCode(htmlContent: string) {
 
   return code;
 }
+
+export function programmingLanguageMapping(programmingLanguage: string) {
+  console.log({ programmingLanguage });
+  switch (programmingLanguage) {
+    case "cpp":
+      return "C++";
+    case "java":
+      return "Java";
+    case "python":
+      return "Python";
+    case "python3":
+      return "Python3";
+    case "c":
+      return "C";
+    case "csharp":
+      return "C#";
+    case "javascript":
+      return "JavaScript";
+    case "typescript":
+      return "TypeScript";
+    case "php":
+      return "PHP";
+    case "swift":
+      return "Swift";
+    case "kotlin":
+      return "Kotlin";
+    case "dart":
+      return "Dart";
+    case "golang":
+      return "Go";
+    case "ruby":
+      return "Ruby";
+    case "scala":
+      return "Scala";
+    case "rust":
+      return "Rust";
+    case "racket":
+      return "Racket";
+    case "erlang":
+      return "Erlang";
+    case "elixir":
+      return "Elixir";
+    default:
+      return "C++";
+  }
+}
+
