@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bot, SendHorizontal } from 'lucide-react';
 import OpenAI from 'openai';
@@ -144,10 +144,32 @@ const ContentPage: React.FC = () => {
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
 
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+  console.log("This is the selected language",selectedLanguage)
+
+  useEffect(() => {
+    const fetchSelectedLanguage = () => {
+      const elements = document.querySelectorAll('[id^="headlessui-popover-button-"]');
+
+      for (const element of elements) {
+        const innerHTML = element.innerHTML;
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = innerHTML;
+        const button = tempDiv.querySelector("button");
+        const buttonText = button?.childNodes[0].nodeValue?.trim();
+        if (buttonText) {
+          setSelectedLanguage(buttonText);
+          break;
+        }
+      }
+    };
+    fetchSelectedLanguage();
+  }, [chatboxExpanded]);
+
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
-        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
+        <ChatBox context={{ problemStatement, programmingLanguage: selectedLanguage }} />
       )}
       <div className="flex justify-end">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
