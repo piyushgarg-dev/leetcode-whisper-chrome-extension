@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import { Button } from '@/components/ui/button';
 import { Bot, SendHorizontal } from 'lucide-react';
 import OpenAI from 'openai';
@@ -89,6 +89,13 @@ function ChatBox({ context }: ChatBoxProps) {
   };
 
   const onSendMessage = () => {
+
+    // Validate for empty or whitespace-only messages
+    if (!value.trim()) {
+      alert("Message cannot be empty.");
+      return;
+    }
+
     setChatHistory((prev) => [
       ...prev,
       { role: 'user', message: value, type: 'text' },
@@ -139,21 +146,31 @@ function ChatBox({ context }: ChatBoxProps) {
 
 const ContentPage: React.FC = () => {
   const [chatboxExpanded, setChatboxExpanded] = React.useState(false);
+  const [hasAPIKey, setHasAPIKey] = React.useState(false);
+  useEffect(() => {
+    const checkAPIKey = async () => {
+      const { apiKey } = await chrome.storage.local.get("apiKey");
+      setHasAPIKey(!!apiKey);
+    };
 
+    checkAPIKey();
+  }, []);
   const metaDescriptionEl = document.querySelector('meta[name=description]');
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
 
   return (
     <div className="__chat-container dark">
-      {chatboxExpanded && (
-        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
+      {hasAPIKey && chatboxExpanded && (
+        <ChatBox context={{ problemStatement, programmingLanguage: "C++" }} />
       )}
       <div className="flex justify-end">
-        <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
-          <Bot />
-          Ask AI
-        </Button>
+        {hasAPIKey && (
+          <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
+            <Bot />
+            Ask AI
+          </Button>
+        )}
       </div>
     </div>
   );
