@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import leetCode from '@/assets/leetcode.png'
 import React from 'react'
 import Show from './components/Show'
@@ -13,6 +14,21 @@ const Popup: React.FC = () => {
     ;(async function loadOpenAPIKey() {
       if (!chrome) return
       const apiKeyFromStorage = (await chrome.storage.local.get('apiKey')) as {
+=======
+import React from "react";
+import leetCode from "@/assets/leetcode.png";
+import { Input } from "./components/ui/input";
+import { Button } from "./components/ui/button";
+
+const Popup: React.FC = () => {
+  const [openAIKey, setOpenAIKey] = React.useState("");
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    (async function loadOpenAPIKey() {
+      if (!chrome) return;
+      const apiKeyFromStorage = (await chrome.storage.local.get("apiKey")) as {
+>>>>>>> e73346b (feat(content): zod and streaming response feature added)
         apiKey?: string;
       };
       if (apiKeyFromStorage.apiKey)
@@ -55,7 +71,11 @@ const Popup: React.FC = () => {
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
+<<<<<<< HEAD
               className="bg-white text-black outline-none"
+=======
+              className="bg-white outline-none"
+>>>>>>> e73346b (feat(content): zod and streaming response feature added)
             />
 
             <Button onClick={handleAddOpenAPIKey} className="dark">

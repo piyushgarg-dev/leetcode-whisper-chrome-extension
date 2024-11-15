@@ -1,8 +1,7 @@
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Bot, ClipboardCopy, Send, SendHorizontal } from 'lucide-react';
+import { Bot, ClipboardCopy, Send } from 'lucide-react';
 import OpenAI from 'openai';
-
 import './style.css';
 import { Input } from '@/components/ui/input';
 import { SYSTEM_PROMPT } from '@/constants/prompt';
@@ -33,8 +32,14 @@ interface ChatBoxProps {
   };
 }
 
+// Define the schema for the AI response
+export const AIResponseSchema = z.object({
+  content: z
+    .string()
+    .describe("The content of the response in markdown format"),
+});
 interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   message: string;
   type: 'text' | 'markdown';
   assistantResponse?: {
@@ -75,17 +80,17 @@ function ChatBox({ context, visible }: ChatBoxProps) {
     const extractedCode = extractCode(userCurrentCodeContainer);
 
     const systemPromptModified = SYSTEM_PROMPT.replace(
-      '{{problem_statement}}',
+      "{{problem_statement}}",
       context.problemStatement
     )
       .replace('{{programming_language}}', programmingLanguage)
       .replace('{{user_code}}', extractedCode);
 
     const apiResponse = await openai.chat.completions.create({
-      model: 'chatgpt-4o-latest',
-      response_format: { type: 'json_object' },
+      model: "gpt-4o-2024-08-06", // support json format
+      response_format: zodResponseFormat(AIResponseSchema, "responseSchema"),
       messages: [
-        { role: 'system', content: systemPromptModified },
+        { role: "system", content: systemPromptModified },
         ...chatHistory.map(
           (chat) =>
             ({
@@ -126,7 +131,7 @@ function ChatBox({ context, visible }: ChatBoxProps) {
   const onSendMessage = () => {
     setChatHistory((prev) => [
       ...prev,
-      { role: 'user', message: value, type: 'text' },
+      { role: "user", message: value, type: "text" },
     ]);
     chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
     setValue('');
