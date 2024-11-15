@@ -143,11 +143,11 @@ const ContentPage: React.FC = () => {
   const metaDescriptionEl = document.querySelector('meta[name=description]');
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
-
+  const programmingLanguage = document?.querySelector('#editor')?.firstChild?.textContent?.split("Auto").join("")  as string;
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
-        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
+        <ChatBox context={{ problemStatement, programmingLanguage: programmingLanguage }} />
       )}
       <div className="flex justify-end">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
