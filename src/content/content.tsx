@@ -144,10 +144,17 @@ const ContentPage: React.FC = () => {
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
 
+  const programmingButton = document.querySelector<HTMLButtonElement>(
+    "#headlessui-popover-button-\\:r1u\\: button"
+  );
+
+  const programmingLanguage =
+    programmingButton?.firstChild?.textContent ?? "C++";
+
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
-        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
+        <ChatBox context={{ problemStatement, programmingLanguage }} />
       )}
       <div className="flex justify-end">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
