@@ -40,7 +40,7 @@ const Popup: React.FC = () => {
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              className='bg-white outline-none text-black'  //API input box Text color turned white to Black
             />
             <Button onClick={handleAddOpenAPIKey} className="dark">
               Save
