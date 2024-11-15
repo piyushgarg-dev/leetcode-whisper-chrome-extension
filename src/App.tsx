@@ -24,12 +24,17 @@ const Popup: React.FC = () => {
     }
   };
 
+  const handleClearInput = async () => {
+    setOpenAIKey('');
+    await chrome.storage.local.remove('apiKey');
+  };
+
   return (
-    <div className="dark relative w-[350px] h-[550px] bg-black text-white p-4">
+    <div className="dark relative w-[350px] h-[400px] bg-[#000000] text-white p-4">
       {isLoaded && (
         <div>
           <div className="w-full mt-10">
-            <img className="mx-auto" src={leetCode} width={150} height={150} />
+            <img className="mx-auto" src={leetCode} width={100} height={100} />
           </div>
           <div className="text-center">
             <h1 className="text-white font-bold text-2xl">LeetCode Whisper</h1>
@@ -40,11 +45,16 @@ const Popup: React.FC = () => {
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              className='!outline-none text-white font-semibold my-2 border-2 border-cyan-500'
             />
-            <Button onClick={handleAddOpenAPIKey} className="dark">
-              Save
-            </Button>
+            <div className='flex gap-5 mx-auto'>
+              <Button onClick={handleAddOpenAPIKey} className="bg-cyan-500 w-20">
+                Save
+              </Button>
+              <Button onClick={handleClearInput} className="bg-red-500 w-20">
+                Clear
+              </Button>
+            </div>
           </div>
         </div>
       )}
