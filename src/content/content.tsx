@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { SYSTEM_PROMPT } from '@/constants/prompt';
 import { extractCode } from './util';
 import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Markdown from 'react-markdown';
 
 function createOpenAISDK(apiKey: string) {
@@ -98,21 +97,25 @@ function ChatBox({ context }: ChatBoxProps) {
     handleGenerateAIResponse();
   };
   return (
-    <div className="w-[400px] h-[550px] mb-2 rounded-xl relative text-wrap overflow-auto">
-      <div className="h-[510px] overflow-auto" ref={chatBoxRef}>
+    <div className="w-[400px] h-[550px] mb-2 rounded-xl relative text-wrap overflow-auto dark:text-white">
+      <div className="h-[510px] overflow-auto"  ref={chatBoxRef}>
         {chatHistory.map((message, index) => (
           <div
             key={index.toString()}
-            className="flex gap-4 mt-3 w-[400px] text-wrap"
+            className="flex gap-4 my-2 w-[400px] text-wrap"
           >
-            <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <div className="w-[100%]">
-              <p>{message.role.toLocaleUpperCase()}</p>
+            <div className={`p-3 w-fit ${index%2==0?"ml-auto":"mr-auto"} bg-[#141414] rounded-md`}>
               {message.type === 'markdown' ? (
-                <Markdown>{message.message}</Markdown>
+                <Markdown
+                components={{
+                  code: ({ node, children, ...props }) =>
+                    (
+                      <pre className="p-4 rounded overflow-auto bg-[#000000] my-2">
+                        <code>{children}</code>
+                      </pre>
+                    ),
+                }}
+                >{message.message}</Markdown>
               ) : (
                 <p>{message.message}</p>
               )}
@@ -121,14 +124,14 @@ function ChatBox({ context }: ChatBoxProps) {
         ))}
       </div>
 
-      <div className="absolute bottom-0 w-full flex items-center gap-2">
+      <div className="absolute bottom-0 w-full flex items-center gap-2 p-1">
         <Input
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') onSendMessage();
           }}
-          className="rounded-lg bg-black"
+          className="rounded-lg bg-black border-white"
           placeholder="Type your message here"
         />
         <SendHorizontal onClick={onSendMessage} className="cursor-pointer" />
@@ -145,7 +148,7 @@ const ContentPage: React.FC = () => {
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
 
   return (
-    <div className="__chat-container dark">
+    <div className={`__chat-container dark px-2 ${chatboxExpanded ? 'bg-black bg-opacity-100' : ''} rounded-md`}>
       {chatboxExpanded && (
         <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
       )}
