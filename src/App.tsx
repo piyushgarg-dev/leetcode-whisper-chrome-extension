@@ -5,7 +5,7 @@ import { Button } from './components/ui/button';
 
 const Popup: React.FC = () => {
   const [openAIKey, setOpenAIKey] = React.useState('');
-  const [isLoaded, setIsLoaded] = React.useState(true);
+  const [isLoaded, setIsLoaded] = React.useState(false);
 
   React.useEffect(() => {
     (async function loadOpenAPIKey() {
@@ -25,7 +25,7 @@ const Popup: React.FC = () => {
   };
 
   return (
-    <div className="dark relative w-[350px] h-[400px] bg-black text-white p-4">
+    <div className="dark relative w-[350px] h-[400px] bg-[#000000] text-white p-4">
       {isLoaded && (
         <div>
           <div className="w-full mt-10">
