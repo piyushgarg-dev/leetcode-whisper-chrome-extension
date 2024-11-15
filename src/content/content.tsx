@@ -67,10 +67,10 @@ function ChatBox({ context }: ChatBoxProps) {
         { role: 'system', content: systemPromptModified },
         ...chatHistory.map(
           (chat) =>
-            ({
-              role: chat.role,
-              content: chat.message,
-            } as ChatCompletionMessageParam)
+          ({
+            role: chat.role,
+            content: chat.message,
+          } as ChatCompletionMessageParam)
         ),
         { role: 'user', content: userMessage },
       ],
@@ -139,7 +139,7 @@ function ChatBox({ context }: ChatBoxProps) {
 
 const ContentPage: React.FC = () => {
   const [chatboxExpanded, setChatboxExpanded] = React.useState(false);
-
+  const isChatOpen = useRef(false);
   const metaDescriptionEl = document.querySelector('meta[name=description]');
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
@@ -150,9 +150,9 @@ const ContentPage: React.FC = () => {
         <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
       )}
       <div className="flex justify-end">
-        <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
+        <Button onClick={() => { setChatboxExpanded(!chatboxExpanded); isChatOpen.current = !isChatOpen.current }}>
           <Bot />
-          Ask AI
+          {isChatOpen.current ? 'Close Chat' : 'Open Chat'}
         </Button>
       </div>
     </div>
