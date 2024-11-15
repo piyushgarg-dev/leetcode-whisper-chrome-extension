@@ -121,7 +121,7 @@ function ChatBox({ context }: ChatBoxProps) {
         ))}
       </div>
 
-      <div className="absolute bottom-0 w-full flex items-center gap-2">
+      <div className="bottom-0 w-[90%] flex items-center m-auto gap-2">
         <Input
           value={value}
           onChange={(e) => setValue(e.target.value)}
