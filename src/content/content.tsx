@@ -144,13 +144,17 @@ const ContentPage: React.FC = () => {
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
 
-  const programmingButton = document.querySelector<HTMLButtonElement>(
-    "#headlessui-popover-button-\\:r1u\\: button"
-  );
+  const divs = document.querySelectorAll(".h-full.w-full");
 
-  const programmingLanguage =
-    programmingButton?.firstChild?.textContent ?? "C++";
+  let programmingLanguage: string | null = "C++"; // Default to C++ if no language is found
 
+  divs.forEach((div) => {
+    const modeId = div.getAttribute("data-mode-id");
+    if (modeId !== null) {
+      programmingLanguage = programmingLanguageMapping(modeId);
+    }
+  });
+  
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
