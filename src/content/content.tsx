@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bot, SendHorizontal } from 'lucide-react';
 import OpenAI from 'openai';
@@ -23,6 +23,7 @@ interface ChatBoxProps {
     programmingLanguage: string;
     problemStatement: string;
   };
+  openAIKey: string | null;
 }
 
 interface ChatMessage {
@@ -31,20 +32,16 @@ interface ChatMessage {
   type: 'text' | 'markdown';
 }
 
-function ChatBox({ context }: ChatBoxProps) {
+function ChatBox({ context, openAIKey }: ChatBoxProps) {
   const [value, setValue] = React.useState('');
   const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([]);
 
   const chatBoxRef = useRef<HTMLDivElement>(null);
 
   const handleGenerateAIResponse = async () => {
-    const openAIAPIKey = (await chrome.storage.local.get('apiKey')) as {
-      apiKey?: string;
-    };
+    if (!openAIKey) return alert('OpenAI API Key is required');
 
-    if (!openAIAPIKey.apiKey) return alert('OpenAI API Key is required');
-
-    const openai = createOpenAISDK(openAIAPIKey.apiKey);
+    const openai = createOpenAISDK(openAIKey);
 
     const userMessage = value;
     const userCurrentCodeContainer = document.querySelector('.view-line');
@@ -138,23 +135,55 @@ function ChatBox({ context }: ChatBoxProps) {
 }
 
 const ContentPage: React.FC = () => {
+  const [openAIKey, setOpenAIKey] = useState<string | null>(null);
+
   const [chatboxExpanded, setChatboxExpanded] = React.useState(false);
 
   const metaDescriptionEl = document.querySelector('meta[name=description]');
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
 
+  useEffect(() => {
+    const getAPIKey = async() => {
+      const apiKeyFromStorage = (await chrome.storage.local.get('apiKey')) as {
+        apiKey?: string;
+      };
+      if (apiKeyFromStorage.apiKey) {
+        setOpenAIKey(apiKeyFromStorage.apiKey);
+      }
+    };
+
+    getAPIKey();
+
+    const handleStorageChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string
+    ) => {
+      if (areaName === 'local' && changes.apiKey) {
+        setOpenAIKey(changes.apiKey.newValue || null);
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
+  }, []);
+
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
-        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
+        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} openAIKey={ openAIKey } />
       )}
-      <div className="flex justify-end">
-        <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
-          <Bot />
-          Ask AI
-        </Button>
-      </div>
+      {openAIKey && (
+        <div className="flex justify-end">
+          <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
+            <Bot />
+            {chatboxExpanded? "Close AI": "Ask AI"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
