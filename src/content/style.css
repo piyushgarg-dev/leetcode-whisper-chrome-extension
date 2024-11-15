@@ -3,3 +3,7 @@
   bottom: 30px;
   right: 30px;
 }
+
+.chatbox-background {
+  background-color: rgba(0, 0, 0, 0.8);
+}
