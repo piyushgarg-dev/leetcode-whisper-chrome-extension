@@ -128,7 +128,7 @@ function ChatBox({ context }: ChatBoxProps) {
           onKeyDown={(e) => {
             if (e.key === 'Enter') onSendMessage();
           }}
-          className="rounded-lg bg-black"
+          className="rounded-lg bg-black text-white"
           placeholder="Type your message here"
         />
         <SendHorizontal onClick={onSendMessage} className="cursor-pointer" />
