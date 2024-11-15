@@ -53,7 +53,7 @@ function ChatBox({ context }: ChatBoxProps) {
   const [value, setValue] = React.useState('');
   const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
-
+  const [selectedModel, setSelectedModel] = React.useState('gpt-4'); 
   const chatBoxRef = useRef<HTMLDivElement>(null);
 
   const handleGenerateAIResponse = async () => {
@@ -85,7 +85,7 @@ function ChatBox({ context }: ChatBoxProps) {
         .replace('{{user_code}}', extractedCode);
 
       const apiResponse = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: selectedModel,
         messages: [
           { role: 'system', content: systemPromptModified },
           ...chatHistory.map(
@@ -97,6 +97,7 @@ function ChatBox({ context }: ChatBoxProps) {
           ),
           { role: 'user', content: userMessage },
         ],
+        response_format: { type: 'json_object' },
       });
 
       if (apiResponse.choices[0].message.content) {
@@ -113,7 +114,6 @@ function ChatBox({ context }: ChatBoxProps) {
           ]);
           chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
         } catch (e) {
-          // If JSON parsing fails, treat the entire response as markdown
           setChatHistory((prev) => [
             ...prev,
             {
@@ -180,6 +180,14 @@ function ChatBox({ context }: ChatBoxProps) {
       </div>
 
       <div className="absolute bottom-0 w-full flex items-center gap-2">
+        <select 
+          value={selectedModel} 
+          onChange={(e) => setSelectedModel(e.target.value)} 
+          className="bg-black text-white rounded-lg"
+        >
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+          <option value="gpt-4">GPT-4</option>
+        </select>
         <Input
           value={value}
           onChange={(e) => setValue(e.target.value)}
