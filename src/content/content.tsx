@@ -98,42 +98,45 @@ function ChatBox({ context }: ChatBoxProps) {
     handleGenerateAIResponse();
   };
   return (
-    <div className="w-[400px] h-[550px] mb-2 rounded-xl relative text-wrap overflow-auto">
-      <div className="h-[510px] overflow-auto" ref={chatBoxRef}>
-        {chatHistory.map((message, index) => (
-          <div
-            key={index.toString()}
-            className="flex gap-4 mt-3 w-[400px] text-wrap"
-          >
+    <div className="w-[400px] h-[550px] mb-2 rounded-xl relative overflow-hidden bg-black text-white shadow-lg">
+    <div className="h-[510px] overflow-auto p-4" ref={chatBoxRef}>
+      {chatHistory.map((message, index) => (
+        <div
+          key={index.toString()}
+          className={`flex gap-4 mt-3 w-full ${message.role === 'user' ? 'justify-end' : ''}`}
+        >
+          {message.role !== 'user' && (
             <Avatar>
               <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
-            <div className="w-[100%]">
-              <p>{message.role.toLocaleUpperCase()}</p>
-              {message.type === 'markdown' ? (
-                <Markdown>{message.message}</Markdown>
-              ) : (
-                <p>{message.message}</p>
-              )}
-            </div>
+          )}
+          <div className="w-full max-w-[80%]">
+            <p className="font-bold text-gray-300 text-xs mb-1">{message.role.toLocaleUpperCase()}</p>
+            {message.type === 'markdown' ? (
+              <Markdown className="prose prose-invert bg-gray-800 p-3 rounded-lg">{message.message}</Markdown>
+            ) : (
+              <p className="bg-gray-800 p-3 rounded-lg">{message.message}</p>
+            )}
           </div>
-        ))}
-      </div>
-
-      <div className="absolute bottom-0 w-full flex items-center gap-2">
-        <Input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') onSendMessage();
-          }}
-          className="rounded-lg bg-black"
-          placeholder="Type your message here"
-        />
-        <SendHorizontal onClick={onSendMessage} className="cursor-pointer" />
-      </div>
+        </div>
+      ))}
     </div>
+  
+    <div className="absolute bottom-0 w-full flex items-center gap-2 p-2 bg-gray-900 border-t border-gray-700">
+      <Input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') onSendMessage();
+        }}
+        className="flex-grow rounded-lg bg-gray-700 text-white placeholder-gray-400 p-2"
+        placeholder="Type your message here"
+      />
+      <SendHorizontal onClick={onSendMessage} className="cursor-pointer text-white hover:text-gray-300" />
+    </div>
+  </div>
+  
   );
 }
 
