@@ -40,13 +40,7 @@ interface ChatMessage {
 
 function ChatBox({ context }: ChatBoxProps) {
   const [value, setValue] = React.useState("");
-  const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      message: "Hello",
-      type: "markdown",
-    },
-  ]);
+  const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([]);
 
   const chatBoxRef = useRef<HTMLDivElement>(null);
 
