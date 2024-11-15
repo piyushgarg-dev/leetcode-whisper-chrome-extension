@@ -4,25 +4,38 @@ import { Input } from './components/ui/input';
 import { Button } from './components/ui/button';
 
 const Popup: React.FC = () => {
-  const [openAIKey, setOpenAIKey] = React.useState('');
+  const [AIKey, setAIKey] = React.useState('');
   const [isLoaded, setIsLoaded] = React.useState(false);
+  const [selectAtModel,setSelectAtModel] = React.useState([])
 
   React.useEffect(() => {
     (async function loadOpenAPIKey() {
       if (!chrome) return;
-      const apiKeyFromStorage = (await chrome.storage.local.get('apiKey')) as {
-        apiKey?: string;
-      };
-      if (apiKeyFromStorage.apiKey) setOpenAIKey(apiKeyFromStorage.apiKey);
+      const { apiKey, selectedModel } = await chrome.storage.local.get([
+        'apiKey',
+        'selectedModel',
+      ]);
+      if (apiKey) setAIKey(apiKey);
+      if (selectedModel) setSelectAtModel(selectedModel);
       setIsLoaded(true);
     })();
   }, []);
 
   const handleAddOpenAPIKey = async () => {
-    if (openAIKey) {
-      await chrome.storage.local.set({ apiKey: openAIKey });
+    if (AIKey) {
+      
+      await chrome.storage.local.set({ 
+        apiKey: AIKey,
+        selectedModel: selectAtModel
+      });
     }
+   
   };
+  const handleChange = (e:any)=>{
+     setSelectAtModel(e.target.value)
+     console.log(e.target.value)
+     
+  }
 
   return (
     <div className="dark relative w-[350px] h-[550px] bg-black text-white p-4">
@@ -35,12 +48,23 @@ const Popup: React.FC = () => {
             <h1 className="text-white font-bold text-2xl">LeetCode Whisper</h1>
           </div>
           <div className="mt-10 flex flex-col gap-2">
-            <label htmlFor="text" className='text-white font-bold text-xl'>Enter Your OpenAI API key</label>
+             {/* Creating a Dropdown for selecting AI model like chatgpt,gemini,claude etc */}
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-white">Select AI Model:</span>
+                <select value={selectAtModel} onChange={handleChange} className='bg-transparent p-2 border border-gray-400 text-white'>
+                  <option value="chatgpt" className='text-black'>ChatGPT</option>
+                  <option value="gemini" className='text-black'>Gemini</option>
+                  <option value="claude" className='text-black'>Claude</option>
+                </select>
+              </div>
+              </div>
+            <label htmlFor="text" className='text-white font-bold text-xl'>Enter Your API key</label>
             <Input
-              value={openAIKey}
-              onChange={(e) => setOpenAIKey(e.target.value)}
+              value={AIKey}
+              onChange={(e) => setAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              className='bg-white text-black outline-none'
             />
             <Button onClick={handleAddOpenAPIKey} className="dark">
               Save
