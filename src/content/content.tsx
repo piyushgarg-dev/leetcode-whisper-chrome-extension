@@ -98,19 +98,21 @@ function ChatBox({ context }: ChatBoxProps) {
     handleGenerateAIResponse();
   };
   return (
-    <div className="w-[400px] h-[550px] mb-2 rounded-xl relative text-wrap overflow-auto">
-      <div className="h-[510px] overflow-auto" ref={chatBoxRef}>
+    <div className='border-2 border-gray-200 p-2 backdrop-blur-md w-[500px] h-[540px] mb-2 rounded-xl relative'>
+      <div className='bg-yellow-300 h-[490px] pb-16' ref={chatBoxRef}>
         {chatHistory.map((message, index) => (
           <div
             key={index.toString()}
-            className="flex gap-4 mt-3 w-[400px] text-wrap"
+            className='flex gap-4 mt-3 w-[400px] text-wrap'
           >
             <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarImage src='https://github.com/shadcn.png' />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
-            <div className="w-[100%]">
-              <p>{message.role.toLocaleUpperCase()}</p>
+            <div className='w-[100%]'>
+              <p className='text-yellow-100'>
+                {message.role.toLocaleUpperCase()}
+              </p>
               {message.type === 'markdown' ? (
                 <Markdown>{message.message}</Markdown>
               ) : (
@@ -121,17 +123,22 @@ function ChatBox({ context }: ChatBoxProps) {
         ))}
       </div>
 
-      <div className="absolute bottom-0 w-full flex items-center gap-2">
+      <div className='absolute bottom-0 flex w-full items-center gap-2 p-2 bg-gray-800'>
         <Input
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') onSendMessage();
           }}
-          className="rounded-lg bg-black"
-          placeholder="Type your message here"
+          className='flex-1 rounded-lg bg-black text-white px-4 py-2'
+          placeholder='Type your message here'
         />
-        <SendHorizontal onClick={onSendMessage} className="cursor-pointer" />
+        <button
+          onClick={onSendMessage}
+          className='flex items-center justify-center text-white bg-gray-700 hover:bg-gray-600 rounded-lg p-2'
+        >
+          <SendHorizontal className='h-5 w-5' />
+        </button>
       </div>
     </div>
   );
@@ -145,11 +152,11 @@ const ContentPage: React.FC = () => {
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
 
   return (
-    <div className="__chat-container dark">
+    <div className='__chat-container dark'>
       {chatboxExpanded && (
         <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
       )}
-      <div className="flex justify-end">
+      <div className='flex justify-end'>
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
           <Bot />
           Ask AI
