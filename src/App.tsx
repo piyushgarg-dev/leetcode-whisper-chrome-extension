@@ -24,6 +24,11 @@ const Popup: React.FC = () => {
     }
   };
 
+  const handleClearInput = async () => {
+    setOpenAIKey('');
+    await chrome.storage.local.remove('apiKey');
+  };
+
   return (
     <div className="dark relative w-[350px] h-[400px] bg-[#000000] text-white p-4">
       {isLoaded && (
@@ -42,9 +47,14 @@ const Popup: React.FC = () => {
               placeholder="Ex. 0aBbnGgzXXXXXX"
               className='!outline-none text-white font-semibold my-2 border-2 border-cyan-500'
             />
-            <Button onClick={handleAddOpenAPIKey} className="bg-cyan-500 w-20 mx-auto">
-              Save
-            </Button>
+            <div className='flex gap-5 mx-auto'>
+              <Button onClick={handleAddOpenAPIKey} className="bg-cyan-500 w-20">
+                Save
+              </Button>
+              <Button onClick={handleClearInput} className="bg-red-500 w-20">
+                Clear
+              </Button>
+            </div>
           </div>
         </div>
       )}
