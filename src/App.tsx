@@ -25,7 +25,7 @@ const Popup: React.FC = () => {
   };
 
   return (
-    <div className="dark relative w-[350px] h-[550px] bg-black text-white p-4">
+    <div className="dark relative w-[350px] h-[400px] bg-black text-white p-4">
       {isLoaded && (
         <div>
           <div className="w-full mt-10">
@@ -40,9 +40,9 @@ const Popup: React.FC = () => {
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              className='bg-white text-black outline-none'
             />
-            <Button onClick={handleAddOpenAPIKey} className="dark">
+            <Button onClick={handleAddOpenAPIKey} className="dark hover:bg-green-700 hover:text-white">
               Save
             </Button>
           </div>
