@@ -25,22 +25,24 @@ const Popup: React.FC = () => {
   };
 
   return (
-    <div className="bg-transparent dark relative w-[350px] h-[550px] bg-black p-4 text-white">
+    <div className="dark relative w-[350px] h-[550px] bg-black p-4 text-white">
       {isLoaded && (
         <div>
-          <div className="w-full mt-10">
+          <div className="w-full mt-10 bg-black">
             <img className="mx-auto" src={leetCode} width={150} height={150} />
           </div>
           <div className="text-center">
             <h1 className="text-white font-bold text-2xl">LeetCode Whisper</h1>
+            <p className='mt-1 font-dancing font-semibold'><span className='italic'>Problem-solving made intuitive </span>{"</>"}</p>
           </div>
           <div className="mt-10 flex flex-col gap-2">
             <Input
+              className='text-white'
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="OpenAI API Key"
             />
-            <Button onClick={handleAddOpenAPIKey} className="dark">
+            <Button onClick={handleAddOpenAPIKey} className="mt-2 dark bg-blue-500 hover:bg-blue-600">
               Save
             </Button>
           </div>
