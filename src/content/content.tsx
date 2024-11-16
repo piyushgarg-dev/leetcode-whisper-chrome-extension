@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bot, ClipboardCopy, Send, SendHorizontal } from 'lucide-react';
 import OpenAI from 'openai';
-
+import Draggable from 'react-draggable';
 import './style.css';
 import { Input } from '@/components/ui/input';
 import { SYSTEM_PROMPT } from '@/constants/prompt';
@@ -234,7 +234,8 @@ const ContentPage: React.FC = () => {
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string
 
   return (
-    <div className="__chat-container dark z-50">
+    <Draggable bounds="body">
+      <div className="__chat-container dark z-50">
       <ChatBox visible={chatboxExpanded} context={{ problemStatement }} />
       <div className="flex justify-end">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
@@ -243,6 +244,8 @@ const ContentPage: React.FC = () => {
         </Button>
       </div>
     </div>
+    </Draggable>
+
   )
 }
 
