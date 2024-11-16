@@ -1,55 +1,82 @@
-import leetCode from '@/assets/leetcode.png';
-import React from 'react';
-import { Button } from './components/ui/button';
-import { Input } from './components/ui/input';
+import leetCode from '@/assets/leetcode.png'
+import React from 'react'
+import Show from './components/Show'
+import { Button } from './components/ui/button'
+import { Input } from './components/ui/input'
 
 const Popup: React.FC = () => {
-  const [openAIKey, setOpenAIKey] = React.useState('');
-  const [isLoaded, setIsLoaded] = React.useState(false);
+  const [openAIKey, setOpenAIKey] = React.useState('')
+  const [isLoaded, setIsLoaded] = React.useState(false)
 
   React.useEffect(() => {
-    (async function loadOpenAPIKey() {
-      if (!chrome) return;
+    ;(async function loadOpenAPIKey() {
+      if (!chrome) return
       const apiKeyFromStorage = (await chrome.storage.local.get('apiKey')) as {
-        apiKey?: string;
-      };
-      if (apiKeyFromStorage.apiKey) setOpenAIKey(apiKeyFromStorage.apiKey);
-      setIsLoaded(true);
-    })();
-  }, []);
+        apiKey?: string
+      }
+      if (apiKeyFromStorage.apiKey) setOpenAIKey(apiKeyFromStorage.apiKey)
+      setIsLoaded(true)
+    })()
+  }, [])
 
   const handleAddOpenAPIKey = async () => {
     if (openAIKey) {
-      await chrome.storage.local.set({ apiKey: openAIKey });
+      await chrome.storage.local.set({ apiKey: openAIKey })
     }
-  };
+  }
 
   return (
-    <div className="dark relative w-[350px] h-[550px] bg-black text-white p-4">
-      {isLoaded && (
-        <div>
-          <div className="w-full mt-10">
-            <img className="mx-auto" src={leetCode} width={150} height={150} />
+    <div className="dark relative w-[350px] bg-[#121627] p-4  text-black">
+      <Show show={isLoaded}>
+        <div className="">
+          <div className="w-full  h-20 overflow-hidden ">
+            <img
+              className="mx-auto h-20 w-auto"
+              src={leetCode}
+              width={150}
+              height={150}
+            />
           </div>
           <div className="text-center">
-            <h1 className="text-white font-bold text-2xl">LeetCode Whisper</h1>
+            <h1 className=" font-bold text-3xl text-white">
+              LeetCode <span className="text-whisperOrange">Whisper</span>
+            </h1>
+            <p className="text-base text-slate-400">
+              Your Companion to Beat LeetCode!
+            </p>
           </div>
           <div className="mt-10 flex flex-col gap-2">
-            <label htmlFor="text" className='text-white font-bold text-xl'>Enter Your OpenAI API key</label>
+            <label htmlFor="text" className="text-white font-bold text-xl">
+              OpenAI API key
+            </label>
             <Input
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
-              placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              placeholder="sk-proj-xxxx"
+              className="text-xs text-white focus:outline-none outline-none  border-[1px] border-slate-600"
             />
+
             <Button onClick={handleAddOpenAPIKey} className="dark">
               Save
             </Button>
           </div>
+          <div className=" h-16 flex items-center justify-center">
+            <p className="text-white text-[14px]">
+              Want more features?&nbsp;
+              <a
+                href="https://github.com/piyushgarg-dev/leetcode-whisper-chrome-extension"
+                className="text-[#86ccee]"
+                target="_blank"
+              >
+                {' '}
+                Request a feature!
+              </a>
+            </p>
+          </div>
         </div>
-      )}
+      </Show>
     </div>
-  );
-};
+  )
+}
 
-export default Popup;
+export default Popup
