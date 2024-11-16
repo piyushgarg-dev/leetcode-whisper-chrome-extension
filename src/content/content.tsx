@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Bot, ClipboardCopy, Send, SendHorizontal } from 'lucide-react';
-import OpenAI from 'openai';
+import { Bot, ClipboardCopy, Send } from 'lucide-react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 import './style.css';
 import { Input } from '@/components/ui/input';
@@ -19,11 +19,9 @@ import {
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
-function createOpenAISDK(apiKey: string) {
-  return new OpenAI({
-    apiKey,
-    dangerouslyAllowBrowser: true,
-  })
+function createGoogleGeminiSDK(apiKey: string) {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 }
 
 interface ChatBoxProps {
@@ -45,95 +43,124 @@ interface ChatMessage {
   };
 }
 
-function ChatBox({ context, visible }: ChatBoxProps) {
-  const [value, setValue] = React.useState('');
-  const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([]);
+async function fetchWithRetry(apiFunction: Function, retries: number = 5, delay: number = 1000) {
+  let attempt = 0;
+  while (attempt < retries) {
+    try {
+      const response = await apiFunction();
+      return response;
+    } catch (error) {
+      if (attempt === retries - 1) {
+        throw error;
+      }
+      attempt++;
+      await new Promise((resolve) => setTimeout(resolve, delay * Math.pow(2, attempt)));
+    }
+  }
+}
 
-  const chatBoxRef = useRef<HTMLDivElement>(null)
+function ChatBox({ context, visible }: ChatBoxProps) {
+  const [value, setValue] = useState('');
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [selectedModel, setSelectedModel] = useState<'openai' | 'google-gemini' | null>(null);
+  const chatBoxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function initialize() {
+      const keys = (await chrome.storage.local.get(['apiKey', 'giminiKey'])) as {
+        apiKey?: string;
+        giminiKey?: string;
+      };
+
+      if (keys.giminiKey) {
+        setSelectedModel('google-gemini');
+      } else if (keys.apiKey) {
+        setSelectedModel('openai');
+      } else {
+        alert('No API keys available. Please add at least one key to use the AI features.');
+      }
+    }
+
+    initialize();
+  }, []);
 
   const handleGenerateAIResponse = async () => {
-    const openAIAPIKey = (await chrome.storage.local.get('apiKey')) as {
-      apiKey?: string
-    }
+    const { giminiKey } = (await chrome.storage.local.get(['giminiKey'])) as {
+      giminiKey?: string;
+    };
 
-    if (!openAIAPIKey.apiKey) return alert('OpenAI API Key is required')
-
-    const openai = createOpenAISDK(openAIAPIKey.apiKey)
-
+    let responseContent = '';
     const userMessage = value;
-    const userCurrentCodeContainer = document.querySelectorAll('.view-line');
-    const changeLanguageButton = document.querySelector(
-      'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
-    );
-    let programmingLanguage = 'UNKNOWN';
-
-    if (changeLanguageButton) {
-      if (changeLanguageButton.textContent)
-        programmingLanguage = changeLanguageButton.textContent;
-    }
-
-    const extractedCode = extractCode(userCurrentCodeContainer);
+    const extractedCode = extractCode(document.querySelectorAll('.view-line'));
 
     const systemPromptModified = SYSTEM_PROMPT.replace(
       '{{problem_statement}}',
       context.problemStatement
     )
-      .replace('{{programming_language}}', programmingLanguage)
+      .replace('{{programming_language}}', 'UNKNOWN')
       .replace('{{user_code}}', extractedCode);
 
-    const apiResponse = await openai.chat.completions.create({
-      model: 'chatgpt-4o-latest',
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPromptModified },
-        ...chatHistory.map(
-          (chat) =>
-            ({
-              role: chat.role,
-              content: chat.message,
-            }) as ChatCompletionMessageParam
-        ),
-        {
-          role: 'user',
-          content: `User Prompt: ${userMessage}\n\nCode: ${extractedCode}`,
-        },
-      ],
-    })
+    if (selectedModel === 'google-gemini' && giminiKey) {
+      const gemini = createGoogleGeminiSDK(giminiKey);
 
-    if (apiResponse.choices[0].message.content) {
-      const result = JSON.parse(apiResponse.choices[0].message.content);
+      try {
+        const apiResponse = await fetchWithRetry(() => gemini.generateContent([systemPromptModified]));
 
-      if ('output' in result) {
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            message: 'NA',
-            role: 'assistant',
-            type: 'markdown',
-            assistantResponse: {
-              feedback: result.output.feedback,
-              hints: result.output.hints,
-              snippet: result.output.snippet,
-              programmingLanguage: result.output.programmingLanguage,
-            },
-          },
-        ]);
-        chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
+        // Parse the response content
+        const responseText = apiResponse.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (responseText) {
+          // The responseText contains a JSON string, so we need to parse it
+          try {
+            const parsedResponse = JSON.parse(responseText.trim().replace(/```json\n|\n```/g, ''));
+
+            const { feedback, hints, snippet, programmingLanguage } = parsedResponse.output;
+
+            // Update chat history with the parsed content
+            setChatHistory((prev) => [
+              ...prev,
+              {
+                message: feedback, // Display the feedback message
+                role: 'assistant',
+                type: 'text',
+                assistantResponse: {
+                  feedback,
+                  hints,
+                  snippet,
+                  programmingLanguage,
+                },
+              },
+            ]);
+          } catch (error) {
+            console.error('Error parsing response text:', error);
+            alert('Failed to parse the response from Gemini API.');
+          }
+        } else {
+          console.error('Response does not contain valid text:', apiResponse);
+          alert('Response does not contain valid text');
+        }
+      } catch (error) {
+        console.error('Error fetching from Gemini API:', error);
+        alert('Failed to fetch response from Gemini API. Please try again later.');
       }
+    } else {
+      alert('No valid API key or model selected.');
+      return;
     }
-  }
+
+    chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const onSendMessage = () => {
     setChatHistory((prev) => [
       ...prev,
       { role: 'user', message: value, type: 'text' },
     ]);
-    chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
     setValue('');
     handleGenerateAIResponse();
   };
 
-  if (!visible) return <></>;
+  if (!visible) return null;
 
   return (
     <Card className="mb-5">
@@ -153,15 +180,14 @@ function ChatBox({ context, visible }: ChatBoxProps) {
               {message.role === 'assistant' && (
                 <>
                   <p>{message.assistantResponse?.feedback}</p>
-
                   <Accordion type="multiple">
                     {message.assistantResponse?.hints && (
                       <AccordionItem value="item-1">
                         <AccordionTrigger>Hints 👀</AccordionTrigger>
                         <AccordionContent>
                           <ul className="space-y-4">
-                            {message.assistantResponse?.hints?.map((e) => (
-                              <li key={e}>{e}</li>
+                            {message.assistantResponse?.hints?.map((hint) => (
+                              <li key={hint}>{hint}</li>
                             ))}
                           </ul>
                         </AccordionContent>
@@ -170,9 +196,8 @@ function ChatBox({ context, visible }: ChatBoxProps) {
                     {message.assistantResponse?.snippet && (
                       <AccordionItem value="item-2">
                         <AccordionTrigger>Code 🧑🏻‍💻</AccordionTrigger>
-
                         <AccordionContent>
-                          <pre className="bg-black p-3 rounded-md shadow-lg ">
+                          <pre className="bg-black p-3 rounded-md shadow-lg">
                             <code>{message.assistantResponse?.snippet}</code>
                           </pre>
                           <Button
@@ -181,7 +206,7 @@ function ChatBox({ context, visible }: ChatBoxProps) {
                             variant="ghost"
                             onClick={() =>
                               navigator.clipboard.writeText(
-                                `${message.assistantResponse?.snippet}`
+                                message.assistantResponse?.snippet || ''
                               )
                             }
                           >
@@ -200,11 +225,10 @@ function ChatBox({ context, visible }: ChatBoxProps) {
       </CardContent>
       <CardFooter>
         <form
-          onSubmit={(event) => {
-            event.preventDefault();
+          onSubmit={(e) => {
+            e.preventDefault();
             if (value.length === 0) return;
             onSendMessage();
-            setValue('');
           }}
           className="flex w-full items-center space-x-2"
         >
@@ -214,7 +238,7 @@ function ChatBox({ context, visible }: ChatBoxProps) {
             className="flex-1"
             autoComplete="off"
             value={value}
-            onChange={(event) => setValue(event.target.value)}
+            onChange={(e) => setValue(e.target.value)}
           />
           <Button type="submit" size="icon" disabled={value.length === 0}>
             <Send className="h-4 w-4" />
@@ -227,11 +251,10 @@ function ChatBox({ context, visible }: ChatBoxProps) {
 }
 
 const ContentPage: React.FC = () => {
-  const [chatboxExpanded, setChatboxExpanded] = React.useState(false)
+  const [chatboxExpanded, setChatboxExpanded] = useState(false);
 
-  const metaDescriptionEl = document.querySelector('meta[name=description]')
-
-  const problemStatement = metaDescriptionEl?.getAttribute('content') as string
+  const metaDescriptionEl = document.querySelector('meta[name=description]');
+  const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
 
   return (
     <div className="__chat-container dark z-50">
@@ -243,7 +266,7 @@ const ContentPage: React.FC = () => {
         </Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ContentPage
+export default ContentPage;
