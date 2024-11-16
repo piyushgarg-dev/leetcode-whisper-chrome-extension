@@ -63,12 +63,9 @@ function ChatBox({ context, visible }: ChatBoxProps) {
     const changeLanguageButton = document.querySelector(
       'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
     );
-    let programmingLanguage = 'UNKNOWN';
+  
 
-    if (changeLanguageButton) {
-      if (changeLanguageButton.textContent)
-        programmingLanguage = changeLanguageButton.textContent;
-    }
+    
 
     const extractedCode = extractCode(userCurrentCodeContainer);
 
@@ -76,7 +73,7 @@ function ChatBox({ context, visible }: ChatBoxProps) {
       '{{problem_statement}}',
       context.problemStatement
     )
-      .replace('{{programming_language}}', programmingLanguage)
+      .replace('{{programming_language}}', context.programmingLanguage)
       .replace('{{user_code}}', extractedCode);
 
     const apiResponse = await openai.chat.completions.create({
