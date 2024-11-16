@@ -1,79 +1,81 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useToast } from './hooks/use-toast';
-import { Github, Key } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { useToast } from './hooks/use-toast'
+import { Github, Key } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import leetCode from '@/assets/leetcode.png'
 const Popup = () => {
-  const [openAIKey, setOpenAIKey] = React.useState('');
-  const [isLoaded, setIsLoaded] = React.useState(false);
-  const [isSaving, setIsSaving] = React.useState(false);
-  const { toast } = useToast();
+  const [openAIKey, setOpenAIKey] = React.useState('')
+  const [isLoaded, setIsLoaded] = React.useState(false)
+  const [isSaving, setIsSaving] = React.useState(false)
+  const { toast } = useToast()
 
   React.useEffect(() => {
-    (async function loadOpenAPIKey() {
-      if (!chrome) return;
+    ;(async function loadOpenAPIKey() {
+      if (!chrome) return
       try {
-        const apiKeyFromStorage = (await chrome.storage.local.get('apiKey')) as {
-          apiKey?: string;
-        };
+        const apiKeyFromStorage = (await chrome.storage.local.get(
+          'apiKey'
+        )) as {
+          apiKey?: string
+        }
         if (apiKeyFromStorage.apiKey) {
-          setOpenAIKey(apiKeyFromStorage.apiKey);
+          setOpenAIKey(apiKeyFromStorage.apiKey)
           toast({
-            title: "API Key Found",
-            description: "Your OpenAI API key is already configured.",
+            title: 'API Key Found',
+            description: 'Your OpenAI API key is already configured.',
             duration: 3000,
-          });
+          })
         }
       } catch (error) {
         toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load API key from storage.",
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to load API key from storage.',
           duration: 3000,
-        });
+        })
       }
-      setIsLoaded(true);
-    })();
-  }, []);
+      setIsLoaded(true)
+    })()
+  }, [])
 
   const handleAddOpenAPIKey = async () => {
     if (!openAIKey) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter an API key",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please enter an API key',
         duration: 3000,
-      });
-      return;
+      })
+      return
     }
 
-    setIsSaving(true);
+    setIsSaving(true)
     try {
-      await chrome.storage.local.set({ apiKey: openAIKey });
+      await chrome.storage.local.set({ apiKey: openAIKey })
       toast({
-        title: "Success",
-        description: "API key saved successfully!",
+        title: 'Success',
+        description: 'API key saved successfully!',
         duration: 3000,
-      });
+      })
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to save API key",
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to save API key',
         duration: 3000,
-      });
+      })
     }
-    setIsSaving(false);
-  };
+    setIsSaving(false)
+  }
 
   if (!isLoaded) {
     return (
       <div className="w-[350px] h-[500px] flex items-center justify-center bg-[#121627]">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-white"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -82,7 +84,7 @@ const Popup = () => {
         <div className="w-full h-20 overflow-hidden">
           <img
             className="mx-auto h-20 w-auto object-contain"
-            src="/api/placeholder/150/150"
+            src={leetCode}
             alt="LeetCode Whisper Logo"
           />
         </div>
@@ -98,7 +100,10 @@ const Popup = () => {
 
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <label htmlFor="apiKey" className="flex items-center gap-2 text-white font-bold text-lg">
+          <label
+            htmlFor="apiKey"
+            className="flex items-center gap-2 text-white font-bold text-lg"
+          >
             <Key className="w-4 h-4" />
             OpenAI API Key
           </label>
@@ -110,7 +115,7 @@ const Popup = () => {
               placeholder="sk-proj-xxxx"
               className="text-sm text-white bg-[#1a1f35] border-slate-700 focus:border-orange-500"
             />
-            <Button 
+            <Button
               onClick={handleAddOpenAPIKey}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white"
               disabled={isSaving}
@@ -140,7 +145,7 @@ const Popup = () => {
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default Popup;
+export default Popup
