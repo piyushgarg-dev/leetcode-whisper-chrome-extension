@@ -95,6 +95,8 @@ function ChatBox({ context, visible }: ChatBoxProps) {
       apiKey?: string
     }
 
+    if (!openAIAPIKey.apiKey) return alert('OpenAI API Key is required')
+
     const openai = createOpenAISDK(openAIAPIKey.apiKey)
 
     const userMessage = value;
