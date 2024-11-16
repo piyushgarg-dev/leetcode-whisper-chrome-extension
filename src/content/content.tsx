@@ -18,8 +18,6 @@ import {
 
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import SideBar from '@/components/SideBar'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 function createOpenAISDK(apiKey: string) {
   return new OpenAI({
@@ -252,30 +250,13 @@ function ChatBox({ context, visible }: ChatBoxProps) {
     ScrollToBottom()
   }, [context, visible])
 
-  const onClickPriviousChat = (problemName: string) => {
-    const previousChats = loadPreviousChats()
-    const filteredChat = previousChats.filter(
-      (chat: PreviousChat) =>
-        chat.problemName.toLocaleLowerCase() === problemName.toLocaleLowerCase()
-    )
-    setProblemName(filteredChat[0].problemName)
-    const chatHistoryData = filteredChat[0].chatHistory
-    setChatHistory([...chatHistoryData])
-  }
-
   if (!visible) return <></>
 
   return (
     <Card className="mb-5">
       <CardContent className="w-full p-0">
         <div className="h-10 bg-[#333333] flex items-center  overflow-hidden p-2">
-          {previousChats && (
-            <SideBar
-              previousChats={previousChats}
-              onClickPriviousChat={onClickPriviousChat}
-            />
-          )}
-          <h3 className="text-white text- p-2 capitalize flex-1 ">
+          <h3 className="text-white text- p-2 capitalize flex-1 font-bold">
             {problemName.replace(/-/g, ' ')}
           </h3>
           {isAITyping && (
@@ -306,21 +287,6 @@ function ChatBox({ context, visible }: ChatBoxProps) {
                     : 'bg-muted'
                 )}
               >
-                <div className="flex items-center gap-2">
-                  <Avatar>
-                    <AvatarImage
-                      src={
-                        message.role === 'user'
-                          ? 'https://github.com/shadcn.png'
-                          : 'https://img.freepik.com/free-vector/graident-ai-robot-vectorart_78370-4114.jpg?t=st=1731697574~exp=1731701174~hmac=2f4fa91058d2386b79cdc9bd4a9d5f7318ae5443acfcd649ac200bea56eb0e90&w=740'
-                      }
-                    />
-                    <AvatarFallback>AI</AvatarFallback>
-                  </Avatar>
-                  <p className="font-bold">
-                    {message.role.toLocaleUpperCase()}
-                  </p>
-                </div>
                 <div className="w-[100%]  overflow-x-hidden ">
                   {message.role === 'user' && <>{message.message}</>}
                   {message.role === 'assistant' && (
