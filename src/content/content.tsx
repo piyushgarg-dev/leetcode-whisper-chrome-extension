@@ -139,21 +139,49 @@ function ChatBox({ context }: ChatBoxProps) {
 
 const ContentPage: React.FC = () => {
   const [chatboxExpanded, setChatboxExpanded] = React.useState(false);
+  const [apiKeyAvailable, setApiKeyAvailable] = React.useState(false);
 
   const metaDescriptionEl = document.querySelector('meta[name=description]');
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string;
+
+  React.useEffect(() => {
+    (async function loadOpenAPIKey() {
+      if (!chrome) return;
+      const apiKeyFromStorage = (await chrome.storage.local.get('apiKey')) as {
+        apiKey?: string;
+      };
+      // console.log('API Key:', apiKeyFromStorage.apiKey);
+      if (apiKeyFromStorage.apiKey){
+        const openAIKeyRegex = /^sk(-proj)?-[a-zA-Z0-9_\-]+$/;
+        const valid = openAIKeyRegex.test(apiKeyFromStorage?.apiKey);
+        if(valid){
+          setApiKeyAvailable(true);
+        }
+      };
+    })();
+  }, []);
 
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
         <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
       )}
-      <div className="flex justify-end">
+      {/* <div className="flex justify-end">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
           <Bot />
           Ask AI
         </Button>
+      </div> */}
+        <div className="flex justify-end">
+        {apiKeyAvailable ? (
+          <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
+            <Bot />
+            Ask AI
+          </Button>
+        ) : (
+          <p className="text-red-500">API Key not found. Please configure it.</p>
+        )}
       </div>
     </div>
   );

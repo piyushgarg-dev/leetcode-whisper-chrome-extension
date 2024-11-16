@@ -19,13 +19,17 @@ const Popup: React.FC = () => {
   }, []);
 
   const handleAddOpenAPIKey = async () => {
-    if (openAIKey) {
+    const openAIKeyRegex = /^sk(-proj)?-[a-zA-Z0-9_\-]+$/;
+    const valid = openAIKeyRegex.test(openAIKey);
+    if (valid) {
       await chrome.storage.local.set({ apiKey: openAIKey });
+    }else{
+      alert("Enter a valid OpenAPI key...")
     }
   };
 
   return (
-    <div className="dark relative w-[350px] h-[550px] bg-black text-white p-4">
+    <div className="dark relative w-[350px] h-[450px] bg-black text-white p-4">
       {isLoaded && (
         <div>
           <div className="w-full mt-10">
@@ -40,7 +44,7 @@ const Popup: React.FC = () => {
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              className='bg-white outline-none text-black'
             />
             <Button onClick={handleAddOpenAPIKey} className="dark">
               Save
