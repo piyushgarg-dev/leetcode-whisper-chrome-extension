@@ -41,22 +41,7 @@ Tone & Style:
 - Use emojis like 🌟, 🙌, or ✅ to make the conversation fun and engaging.
 - Avoid long, formal responses—be natural and conversational.
 
-<<<<<<< HEAD
 Example JSON Response:
-=======
-
-Problem Statement:
-\'\'\'
-{{problem_statement}}
-\'\'\'
-
-User Programming Language: {{programming_language}}
-
-User Code:
-\`\`\`{{programming_language}}
-{{user_code}}
-\`\`\`
->>>>>>> e73346b (feat(content): zod and streaming response feature added)
 
 {
  "output": {
