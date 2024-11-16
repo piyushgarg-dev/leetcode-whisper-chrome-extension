@@ -36,14 +36,11 @@ function ChatBox({ context }: ChatBoxProps) {
   const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([])
 
   const chatBoxRef = useRef<HTMLDivElement>(null)
-
   const handleGenerateAIResponse = async () => {
     const openAIAPIKey = (await chrome.storage.local.get('apiKey')) as {
       apiKey?: string
     }
-
     if (!openAIAPIKey.apiKey) return alert('OpenAI API Key is required')
-
     const openai = createOpenAISDK(openAIAPIKey.apiKey)
 
     const userMessage = value
@@ -86,7 +83,14 @@ function ChatBox({ context }: ChatBoxProps) {
     }
   }
 
-  const onSendMessage = () => {
+  const onSendMessage =async () => {
+    const openAIAPIKey = (await chrome.storage.local.get('apiKey')) as {
+      apiKey?: string
+    }
+    if (!openAIAPIKey.apiKey) {
+      setValue('')
+      return alert('OpenAI API Key is required')
+    }
     setChatHistory((prev) => [
       ...prev,
       { role: 'user', message: value, type: 'text' },
@@ -119,14 +123,14 @@ function ChatBox({ context }: ChatBoxProps) {
         ))}
       </div>
 
-      <div className="absolute bottom-0 w-full flex items-center gap-2">
+      <div className="absolute bottom-1 w-full flex p-1 items-center gap-2">
         <Input
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') onSendMessage()
           }}
-          className="rounded-lg bg-black"
+          className="w-full rounded-lg bg-black px-3 py-2 outline-none border border-transparent transition-all duration-200 focus:outline-1"
           placeholder="Type your message here"
         />
         <SendHorizontal onClick={onSendMessage} className="cursor-pointer" />
@@ -137,17 +141,15 @@ function ChatBox({ context }: ChatBoxProps) {
 
 const ContentPage: React.FC = () => {
   const [chatboxExpanded, setChatboxExpanded] = React.useState(false)
-
   const metaDescriptionEl = document.querySelector('meta[name=description]')
-
+  const programmingLanguage= document.querySelector('[data-mode-id]')?.getAttribute('data-mode-id') as string;
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string
-
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
-        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
+        <ChatBox context={{ problemStatement, programmingLanguage: programmingLanguage }} />
       )}
-      <div className="flex justify-end">
+      <div className="flex justify-end p-1">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
           <Bot />
           Ask AI
