@@ -3,29 +3,54 @@ import React from 'react'
 import Show from './components/Show'
 import { Button } from './components/ui/button'
 import { Input } from './components/ui/input'
-import { FormDescription } from './components/ui/form'
 
 const Popup: React.FC = () => {
   const [openAIKey, setOpenAIKey] = React.useState('')
+  const [isApiKeySaved, setIsApiKeySaved] = React.useState(false)
   const [isLoaded, setIsLoaded] = React.useState(false)
+  const [showFullKey, setShowFullKey] = React.useState(false)
 
   React.useEffect(() => {
     ;(async function loadOpenAPIKey() {
       if (!chrome) return
       const apiKeyFromStorage = (await chrome.storage.local.get('apiKey')) as {
-        apiKey?: string;
-      };
-      if (apiKeyFromStorage.apiKey)
-        setOpenAIKey(`${apiKeyFromStorage.apiKey.substring(0, 12)}-XXXXXX`);
-      setIsLoaded(true);
-    })();
-  }, []);
+        apiKey?: string
+      }
+      if (apiKeyFromStorage.apiKey) {
+        setIsApiKeySaved(true)
+        setOpenAIKey(`${apiKeyFromStorage.apiKey.substring(0, 12)}-XXXXXX`)
+      }
+      setIsLoaded(true)
+    })()
+  }, [])
 
   const handleAddOpenAPIKey = async () => {
     if (openAIKey) {
       await chrome.storage.local.set({ apiKey: openAIKey })
+      setIsApiKeySaved(true)
     }
   }
+
+  const handleRemoveAPIKey = async () => {
+    const yes = confirm('Are you sure...')
+    if (!yes) return
+    await chrome.storage.local.remove('apiKey')
+    setOpenAIKey('')
+    setIsApiKeySaved(false)
+  }
+
+  const handleViewAPIKey = async () => {
+    if (showFullKey) {
+      setShowFullKey(false)
+      return
+    }
+
+    setShowFullKey(true)
+  }
+
+  const maskedAPIKey = openAIKey
+    ? `sk_${'*'.repeat(8)}${openAIKey.slice(-4)}`
+    : ''
 
   return (
     <div className="dark relative w-[350px] bg-[#121627] p-4  text-black">
@@ -47,21 +72,47 @@ const Popup: React.FC = () => {
               Your Companion to Beat LeetCode!
             </p>
           </div>
-          <div className="mt-10 flex flex-col gap-2">
-            <label htmlFor="text" className="text-white font-bold text-xl">
-              Enter Your OpenAI API key
-            </label>
-            <Input
-              value={openAIKey}
-              onChange={(e) => setOpenAIKey(e.target.value)}
-              placeholder="Ex. 0aBbnGgzXXXXXX"
-              className="bg-white text-black outline-none"
-            />
-
-            <Button onClick={handleAddOpenAPIKey} className="dark">
-              Save
-            </Button>
-          </div>
+          {!isApiKeySaved ? (
+            <div className="mt-10 flex flex-col gap-2">
+              <label htmlFor="text" className="text-white font-bold text-xl">
+                Enter Your OpenAI API key
+              </label>
+              <Input
+                value={openAIKey}
+                onChange={(e) => setOpenAIKey(e.target.value)}
+                placeholder="Ex. 0aBbnGgzXXXXXX"
+                className="bg-white outline-none text-black focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              <Button onClick={handleAddOpenAPIKey} className="dark">
+                Save
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-10 flex flex-col gap-2">
+              <label htmlFor="text" className="text-white font-bold text-xl">
+                Your OpenAI API key is saved
+              </label>
+              <p className="text-white text-sm">
+                You can view, change, or delete it anytime.
+              </p>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={showFullKey ? openAIKey : maskedAPIKey}
+                  readOnly
+                  className="bg-white outline-none text-black focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+                <Button onClick={handleViewAPIKey} className="bg-green-300">
+                  {showFullKey ? 'Hide' : 'View'}
+                </Button>
+                <Button
+                  onClick={handleRemoveAPIKey}
+                  className="text-white hover:text-black bg-[red]"
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )}
           <div className=" h-16 flex items-center justify-center">
             <p className="text-white text-[14px]">
               Want more features?&nbsp;
