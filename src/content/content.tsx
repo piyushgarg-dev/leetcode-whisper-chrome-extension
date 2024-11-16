@@ -1,15 +1,23 @@
-import React, { useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { Bot, SendHorizontal } from 'lucide-react'
-import OpenAI from 'openai'
+import React, { useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Bot, ClipboardCopy, Send, SendHorizontal } from 'lucide-react';
+import OpenAI from 'openai';
 
-import './style.css'
-import { Input } from '@/components/ui/input'
-import { SYSTEM_PROMPT } from '@/constants/prompt'
-import { extractCode } from './util'
-import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import Markdown from 'react-markdown'
+import './style.css';
+import { Input } from '@/components/ui/input';
+import { SYSTEM_PROMPT } from '@/constants/prompt';
+import { extractCode } from './util';
+import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+
+import { cn } from '@/lib/utils';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 function createOpenAISDK(apiKey: string) {
   return new OpenAI({
@@ -19,21 +27,28 @@ function createOpenAISDK(apiKey: string) {
 }
 
 interface ChatBoxProps {
+  visible?: boolean;
   context: {
-    programmingLanguage: string
-    problemStatement: string
-  }
+    problemStatement: string;
+    programmingLanguage:string;
+  };
 }
 
 interface ChatMessage {
-  role: 'user' | 'assistant'
-  message: string
-  type: 'text' | 'markdown'
+  role: 'user' | 'assistant';
+  message: string;
+  type: 'text' | 'markdown';
+  assistantResponse?: {
+    feedback?: string;
+    hints?: string[];
+    snippet?: string;
+    programmingLanguage?: string;
+  };
 }
 
-function ChatBox({ context }: ChatBoxProps) {
-  const [value, setValue] = React.useState('')
-  const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([])
+function ChatBox({ context, visible }: ChatBoxProps) {
+  const [value, setValue] = React.useState('');
+  const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([]);
 
   const chatBoxRef = useRef<HTMLDivElement>(null)
   const handleGenerateAIResponse = async () => {
@@ -43,17 +58,26 @@ function ChatBox({ context }: ChatBoxProps) {
     if (!openAIAPIKey.apiKey) return alert('OpenAI API Key is required')
     const openai = createOpenAISDK(openAIAPIKey.apiKey)
 
-    const userMessage = value
-    const userCurrentCodeContainer = document.querySelector('.view-line')
+    const userMessage = value;
+    const userCurrentCodeContainer = document.querySelectorAll('.view-line');
+    const changeLanguageButton = document.querySelector(
+      'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
+    );
+    let programmingLanguage = 'UNKNOWN';
 
-    const extractedCode = extractCode(userCurrentCodeContainer?.innerHTML ?? '')
+    if (changeLanguageButton) {
+      if (changeLanguageButton.textContent)
+        programmingLanguage = changeLanguageButton.textContent;
+    }
+
+    const extractedCode = extractCode(userCurrentCodeContainer);
 
     const systemPromptModified = SYSTEM_PROMPT.replace(
       '{{problem_statement}}',
       context.problemStatement
     )
-      .replace('{{programming_language}}', context.programmingLanguage)
-      .replace('{{user_code}}', extractedCode)
+      .replace('{{programming_language}}', programmingLanguage)
+      .replace('{{user_code}}', extractedCode);
 
     const apiResponse = await openai.chat.completions.create({
       model: 'chatgpt-4o-latest',
@@ -67,18 +91,32 @@ function ChatBox({ context }: ChatBoxProps) {
               content: chat.message,
             }) as ChatCompletionMessageParam
         ),
-        { role: 'user', content: userMessage },
+        {
+          role: 'user',
+          content: `User Prompt: ${userMessage}\n\nCode: ${extractedCode}`,
+        },
       ],
     })
 
     if (apiResponse.choices[0].message.content) {
-      const result = JSON.parse(apiResponse.choices[0].message.content)
+      const result = JSON.parse(apiResponse.choices[0].message.content);
+
       if ('output' in result) {
         setChatHistory((prev) => [
           ...prev,
-          { message: result.output, role: 'user', type: 'markdown' },
-        ])
-        chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' })
+          {
+            message: 'NA',
+            role: 'assistant',
+            type: 'markdown',
+            assistantResponse: {
+              feedback: result.output.feedback,
+              hints: result.output.hints,
+              snippet: result.output.snippet,
+              programmingLanguage: result.output.programmingLanguage,
+            },
+          },
+        ]);
+        chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
       }
     }
   }
@@ -94,49 +132,103 @@ function ChatBox({ context }: ChatBoxProps) {
     setChatHistory((prev) => [
       ...prev,
       { role: 'user', message: value, type: 'text' },
-    ])
-    setValue('')
-    chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' })
-    handleGenerateAIResponse()
-  }
+    ]);
+    chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setValue('');
+    handleGenerateAIResponse();
+  };
+
+  if (!visible) return <></>;
+
   return (
-    <div className="w-[400px] h-[550px] mb-2 rounded-xl relative text-wrap overflow-auto">
-      <div className="h-[510px] overflow-auto" ref={chatBoxRef}>
-        {chatHistory.map((message, index) => (
-          <div
-            key={index.toString()}
-            className="flex gap-4 mt-3 w-[400px] text-wrap"
-          >
-            <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <div className="w-[100%]">
-              <p>{message.role.toLocaleUpperCase()}</p>
-              {message.type === 'markdown' ? (
-                <Markdown>{message.message}</Markdown>
-              ) : (
-                <p>{message.message}</p>
+    <Card className="mb-5">
+      <CardContent>
+        <div className="space-y-4 h-[400px] w-[500px] overflow-auto mt-5">
+          {chatHistory.map((message, index) => (
+            <div
+              key={index}
+              className={cn(
+                'flex w-max max-w-[75%] flex-col gap-2 rounded-lg px-3 py-2 text-sm',
+                message.role === 'user'
+                  ? 'ml-auto bg-primary text-primary-foreground'
+                  : 'bg-muted'
+              )}
+            >
+              {message.role === 'user' && <>{message.message}</>}
+              {message.role === 'assistant' && (
+                <>
+                  <p>{message.assistantResponse?.feedback}</p>
+
+                  <Accordion type="multiple">
+                    {message.assistantResponse?.hints && (
+                      <AccordionItem value="item-1">
+                        <AccordionTrigger>Hints 👀</AccordionTrigger>
+                        <AccordionContent>
+                          <ul className="space-y-4">
+                            {message.assistantResponse?.hints?.map((e) => (
+                              <li key={e}>{e}</li>
+                            ))}
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    )}
+                    {message.assistantResponse?.snippet && (
+                      <AccordionItem value="item-2">
+                        <AccordionTrigger>Code 🧑🏻‍💻</AccordionTrigger>
+
+                        <AccordionContent>
+                          <pre className="bg-black p-3 rounded-md shadow-lg ">
+                            <code>{message.assistantResponse?.snippet}</code>
+                          </pre>
+                          <Button
+                            className="p-0 mt-2"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              navigator.clipboard.writeText(
+                                `${message.assistantResponse?.snippet}`
+                              )
+                            }
+                          >
+                            <ClipboardCopy />
+                          </Button>
+                        </AccordionContent>
+                      </AccordionItem>
+                    )}
+                  </Accordion>
+                </>
               )}
             </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="absolute bottom-1 w-full flex p-1 items-center gap-2">
-        <Input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') onSendMessage()
+          ))}
+          <div ref={chatBoxRef} />
+        </div>
+      </CardContent>
+      <CardFooter>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (value.length === 0) return;
+            onSendMessage();
+            setValue('');
           }}
-          className="w-full rounded-lg bg-black px-3 py-2 outline-none border border-transparent transition-all duration-200 focus:outline-1"
-          placeholder="Type your message here"
-        />
-        <SendHorizontal onClick={onSendMessage} className="cursor-pointer" />
-      </div>
-    </div>
-  )
+          className="flex w-full items-center space-x-2"
+        >
+          <Input
+            id="message"
+            placeholder="Type your message..."
+            className="flex-1"
+            autoComplete="off"
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+          />
+          <Button type="submit" size="icon" disabled={value.length === 0}>
+            <Send className="h-4 w-4" />
+            <span className="sr-only">Send</span>
+          </Button>
+        </form>
+      </CardFooter>
+    </Card>
+  );
 }
 
 const ContentPage: React.FC = () => {
