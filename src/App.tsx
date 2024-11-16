@@ -24,6 +24,19 @@ const Popup: React.FC = () => {
     }
   };
 
+  const handleClearKey = async()=>{
+
+    try{ 
+    await chrome.storage.local.remove('apikey');
+    setOpenAIKey('');
+    alert('API key cleared successfully!')
+
+   }catch(e){
+    console.error('Failed to clear API key:', e);
+
+    }
+  }
+
   return (
     <div className="dark relative w-[350px] h-[550px] bg-black text-white p-4">
       {isLoaded && (
@@ -40,10 +53,14 @@ const Popup: React.FC = () => {
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
-              className='bg-white outline-none'
+              type='password'
+              className='bg-white outline-none text-black'
             />
             <Button onClick={handleAddOpenAPIKey} className="dark">
               Save
+            </Button>
+            <Button onClick={handleClearKey} className="dark">
+              Clear
             </Button>
           </div>
         </div>
