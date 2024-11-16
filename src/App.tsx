@@ -3,7 +3,7 @@ import React from 'react'
 import Show from './components/Show'
 import { Button } from './components/ui/button'
 import { Input } from './components/ui/input'
-import { FormDescription } from './components/ui/form'
+// import { FormDescription } from './components/ui/form'
 
 const Popup: React.FC = () => {
   const [openAIKey, setOpenAIKey] = React.useState('')
