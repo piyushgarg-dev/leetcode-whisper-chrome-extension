@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Bot, ClipboardCopy, Send, SendHorizontal } from 'lucide-react';
+import { Bot, ClipboardCopy, Send } from 'lucide-react';
 import OpenAI from 'openai';
 
 import './style.css';
@@ -49,7 +49,7 @@ function ChatBox({ context, visible }: ChatBoxProps) {
   const [value, setValue] = React.useState('');
   const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([]);
 
-  const chatBoxRef = useRef<HTMLDivElement>(null)
+  const chatBoxRef = React.useRef<HTMLDivElement>(null)
 
   const handleGenerateAIResponse = async () => {
     const openAIAPIKey = (await chrome.storage.local.get('apiKey')) as {
@@ -228,18 +228,86 @@ function ChatBox({ context, visible }: ChatBoxProps) {
 
 const ContentPage: React.FC = () => {
   const [chatboxExpanded, setChatboxExpanded] = React.useState(false)
+  const chatboxRef = React.useRef<HTMLDivElement>(null)
+
+  // Flag to prevent multiple outside clicks on "Close AI" button
+  const ignoreOutsideClick = React.useRef(true)
 
   const metaDescriptionEl = document.querySelector('meta[name=description]')
-
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string
+
+
+  // Close the chatbox if clicked outside
+  const handlePointerDown = React.useCallback((event: PointerEvent) => {
+    // Only proceed if click is outside the chatbox and chatbox is expanded
+    if (!ignoreOutsideClick.current || !chatboxExpanded) return;
+
+    const isOutsideChatbox = chatboxRef.current && !chatboxRef.current.contains(event.target as Node);
+
+    // Check if click is outside ChatBox but not on the "Close AI" button
+    const isClickOnCloseButton = (event.target as Element).closest('.__chat-container button');
+
+    if (isOutsideChatbox && !isClickOnCloseButton) {
+      setChatboxExpanded(false);
+      ignoreOutsideClick.current = false; // Reset flag after processed
+    } else {
+      ignoreOutsideClick.current = true; // Reset flag for next click
+    }
+  }, [chatboxExpanded]);
+
+  const handleFocusLoss = () => {
+    if (chatboxExpanded) {
+      setChatboxExpanded(false); // Close the chatbox on losing focus
+    }
+  }
+
+
+  React.useEffect(() => {
+    // Listen for clicks outside the chatbox
+    document.addEventListener('pointerdown', handlePointerDown);
+    // Listen for focus loss (e.g., clicking on desktop or browser toolbar)
+    window.addEventListener('blur', handleFocusLoss);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('blur', handleFocusLoss);
+    }
+  }, [handlePointerDown]);
+
+
+  // Close the chatbox if the Escape key is pressed
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setChatboxExpanded(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+
+  // Function to toggle chatbox
+  const toggleChatbox = () => {
+    setChatboxExpanded(prevState => !prevState);
+    ignoreOutsideClick.current = true; // Reset flag for next click
+  };
 
   return (
     <div className="__chat-container dark z-50">
-      <ChatBox visible={chatboxExpanded} context={{ problemStatement }} />
+      {chatboxExpanded && (
+        <div ref={chatboxRef}>
+          <ChatBox visible={chatboxExpanded} context={{ problemStatement }} />
+        </div>
+      )}
       <div className="flex justify-end">
-        <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
+        <Button onClick={toggleChatbox}>
           <Bot />
-          Ask AI
+          {chatboxExpanded ? 'Close AI' : 'Ask AI'}
         </Button>
       </div>
     </div>
