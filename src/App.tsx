@@ -51,7 +51,7 @@ const Popup: React.FC = () => {
             <label htmlFor="text" className='text-white font-bold text-xl'>Enter Your OpenAI API key</label>
             <Input
               value={openAIKey}
-              onChange={(e) => (e.target.value)}
+              onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="Ex. 0aBbnGgzXXXXXX"
               type='password'
               className='bg-white outline-none text-black'
