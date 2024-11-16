@@ -36,7 +36,6 @@ function ChatBox({ context }: ChatBoxProps) {
   const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([])
 
   const chatBoxRef = useRef<HTMLDivElement>(null)
-  console.log(context,"context")
   const handleGenerateAIResponse = async () => {
     const openAIAPIKey = (await chrome.storage.local.get('apiKey')) as {
       apiKey?: string
