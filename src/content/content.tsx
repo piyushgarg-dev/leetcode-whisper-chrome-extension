@@ -89,6 +89,10 @@ function ChatBox({ context }: ChatBoxProps) {
   };
 
   const onSendMessage = () => {
+    if(value.trim() === ""){
+      alert("Enter your prompt...")
+      return;
+    }
     setChatHistory((prev) => [
       ...prev,
       { role: 'user', message: value, type: 'text' },
@@ -121,17 +125,17 @@ function ChatBox({ context }: ChatBoxProps) {
         ))}
       </div>
 
-      <div className="absolute bottom-0 w-full flex items-center gap-2">
+      <div className="absolute bottom-0 w-full flex items-center gap-2 mb-2">
         <Input
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') onSendMessage();
           }}
-          className="rounded-lg bg-black"
+          className="rounded-lg bg-black focus:border-2 focus:border-white focus:shadow-md focus:shadow-white"
           placeholder="Type your message here"
         />
-        <SendHorizontal onClick={onSendMessage} className="cursor-pointer" />
+        <SendHorizontal onClick={onSendMessage} className="cursor-pointer hover:scale-90 hover:text-red-600" />
       </div>
     </div>
   );
