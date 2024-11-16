@@ -36,12 +36,13 @@ const Popup: React.FC = () => {
     ;(async function loadOpenAPIKey() {
       if (!chrome) return
       const apiKeyFromStorage = (await chrome.storage.local.get('apiKey')) as {
-        apiKey?: string
-      }
-      if (apiKeyFromStorage.apiKey) setOpenAIKey(apiKeyFromStorage.apiKey)
-      setIsLoaded(true)
-    })()
-  }, [])
+        apiKey?: string;
+      };
+      if (apiKeyFromStorage.apiKey)
+        setOpenAIKey(`${apiKeyFromStorage.apiKey.substring(0, 12)}-XXXXXX`);
+      setIsLoaded(true);
+    })();
+  }, []);
 
   React.useEffect(() => {
     if (!openAIKey)
@@ -86,12 +87,12 @@ const Popup: React.FC = () => {
             </p>
           </div>
           <div className="mt-10 flex flex-col gap-2">
-            <label htmlFor="text" className='text-white font-bold text-xl'>OpenAI API key</label>
+            <label htmlFor="text" className='text-white font-bold text-xl'>Enter Your OpenAI API key</label>
             <label htmlFor="text" className='text-red-400 text-base'>{isInvalidApiKey}</label>
             <Input
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
-              placeholder="sk-proj-xxxx"
+              placeholder="Ex. 0aBbnGgzXXXXXX"
               className='text-xs text-white focus:outline-none outline-none  border-[1px] border-slate-600'  //API input box Text color turned white to Black
               onKeyDown={(e) => e.key === 'Enter' ? handleAddOpenAPIKey() : null}   //API Key Validation on pressing "Enter" key
             />
