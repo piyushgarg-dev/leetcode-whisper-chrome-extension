@@ -239,7 +239,7 @@ const ContentPage: React.FC = () => {
       <div className="flex justify-end">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
           <Bot />
-          Ask AI
+          {chatboxExpanded ? 'Close AI' : 'Ask AI'}
         </Button>
       </div>
     </div>
