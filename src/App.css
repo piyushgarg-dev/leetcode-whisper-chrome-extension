@@ -1,0 +1,42 @@
+.gradient-link {
+  background: linear-gradient(90deg, #ff6f61, #ffba00, #4caf50, #2196f3, #ff6f61);
+  background-size: 200% 200%;
+  transition: all 0.3s ease-in-out;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  text-decoration: none;
+}
+
+.gradient-link:hover {
+  animation: gradientHover 2s infinite;
+}
+
+.gradient-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0; /* Start with no underline */
+  height: 0.8px;
+  background: linear-gradient(90deg, #ff6f61, #ffba00, #4caf50, #2196f3, #ff6f61);
+  background-size: 200% 200%;
+  /* animation: gradientHover 2s infinite; */
+  transition: width 0.3s ease, background-position 3s linear; /* Smooth underline effect */
+}
+
+.gradient-link:hover::after {
+  width: 100%; /* Expand underline smoothly */
+}
+
+@keyframes gradientHover {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
