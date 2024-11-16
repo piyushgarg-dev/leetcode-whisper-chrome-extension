@@ -5,8 +5,8 @@
   border: 1px solid white;
   padding: 1%;
   border-radius: 10px;
-  background-color: rgba(0, 0, 0, 0.40); /* Semi-transparent background */
+  background-color: rgba(0, 0, 0, 0.40); 
   background-image: url("https://assets.leetcode.com/static_assets/public/icons/favicon.ico");
-  background-position: center; /* Center the image in the container */
-  background-repeat: no-repeat; /* Prevent image repetition */
+  background-position: center; 
+  background-repeat: no-repeat; 
 }
