@@ -142,10 +142,21 @@ const ContentPage: React.FC = () => {
 
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string
 
+  const divs = document.querySelectorAll(".h-full.w-full");
+
+  let programmingLanguage: string | null = "C++"; // Default to C++ if no language is found
+
+  divs.forEach((div) => {
+    const modeId = div.getAttribute("data-mode-id");
+    if (modeId !== null) {
+      programmingLanguage = programmingLanguageMapping(modeId);
+    }
+  });
+  
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
-        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
+        <ChatBox context={{ problemStatement, programmingLanguage }} />
       )}
       <div className="flex justify-end">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
