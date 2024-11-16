@@ -96,7 +96,7 @@ function ChatBox({ context }: ChatBoxProps) {
     handleGenerateAIResponse()
   }
   return (
-    <div className="w-[400px] h-[550px] mb-2 rounded-xl relative text-wrap overflow-auto">
+    <div className=" bg-black w-[400px] h-[550px] mb-2 rounded-xl relative text-wrap overflow-auto">
       <div className="h-[510px] overflow-auto" ref={chatBoxRef}>
         {chatHistory.map((message, index) => (
           <div
