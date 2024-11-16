@@ -171,12 +171,6 @@ const ContentPage: React.FC = () => {
       {chatboxExpanded && (
         <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
       )}
-      {/* <div className="flex justify-end">
-        <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
-          <Bot />
-          Ask AI
-        </Button>
-      </div> */}
         <div className="flex justify-end">
         {apiKeyAvailable ? (
           <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>

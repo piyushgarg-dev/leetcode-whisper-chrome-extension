@@ -23,7 +23,7 @@ const Popup: React.FC = () => {
     const valid = openAIKeyRegex.test(openAIKey);
     if (valid) {
       await chrome.storage.local.set({ apiKey: openAIKey });
-      alert("API Key saved successfully!");
+      alert("API Key saved successfully! Now reload/refresh your webpage once, before use...");
       window.close(); // Close the dialog box
     }else{
       alert("Enter a valid OpenAPI key...")
