@@ -65,7 +65,14 @@ function ChatBox({ context, visible }: ChatBoxProps) {
     const changeLanguageButton = document.querySelector(
       'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
     );
-    let programmingLanguage = 'UNKNOWN';
+    let programmingLanguage = document.querySelector("button[class='rounded items-center whitespace-nowrap focus:outline-none inline-flex bg-transparent dark:bg-dark-transparent text-text-secondary dark:text-text-secondary active:bg-transparent dark:active:bg-dark-transparent hover:bg-fill-secondary dark:hover:bg-fill-secondary px-1.5 py-0.5 text-sm font-normal group']")?.textContent;
+
+    if (programmingLanguage == undefined || programmingLanguage == null){
+      programmingLanguage = 'UNKNOWN';
+    }
+
+    console.log("Programming language choosen is :",programmingLanguage)
+
 
     if (changeLanguageButton) {
       if (changeLanguageButton.textContent)
