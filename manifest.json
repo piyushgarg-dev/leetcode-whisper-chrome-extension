@@ -4,6 +4,10 @@
   "version": "1.0.0",
   "description": "Chrome extension providing AI-driven hints on LeetCode problems. Get step-by-step help to boost problem-solving skills effectively.",
   "permissions": ["storage"],
+  "host_permissions": [
+    "http://localhost:5173/",
+    "ws://localhost:5173/"
+  ],
   "action": {
     "default_popup": "index.html"
   },
