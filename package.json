@@ -14,6 +14,7 @@
     "@codemirror/lang-markdown": "^6.3.1",
     "@codemirror/language-data": "^6.5.1",
     "@crxjs/vite-plugin": "^2.0.0-beta.28",
+    "@google/generative-ai": "^0.21.0",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-alert-dialog": "^1.1.2",
