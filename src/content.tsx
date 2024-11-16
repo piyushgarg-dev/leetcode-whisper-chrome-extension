@@ -1,4 +1,5 @@
 import './index.css'
+import { LLMContextProvider } from './provider/llm_context'
 
 import { createRoot } from 'react-dom/client'
 import { StrictMode } from 'react'
@@ -10,6 +11,8 @@ document.body.append(root)
 
 createRoot(root).render(
   <StrictMode>
-    <ContentPage />
+    <LLMContextProvider>
+      <ContentPage />
+    </LLMContextProvider>
   </StrictMode>
 )
