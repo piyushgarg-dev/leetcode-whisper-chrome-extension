@@ -3,7 +3,7 @@ import React from 'react'
 import Show from './components/Show'
 import { Button } from './components/ui/button'
 import { Input } from './components/ui/input'
-import { FormDescription } from './components/ui/form'
+import { ThemeToggle } from './components/theme-toggle'
 
 const Popup: React.FC = () => {
   const [openAIKey, setOpenAIKey] = React.useState('')
@@ -27,42 +27,45 @@ const Popup: React.FC = () => {
   }
 
   return (
-    <div className="dark relative w-[350px] bg-[#121627] p-4  text-black">
+    <div className="relative w-[350px] bg-background p-4 text-foreground">
       <Show show={isLoaded}>
         <div className="">
-          <div className="w-full  h-20 overflow-hidden ">
-            <img
-              className="mx-auto h-20 w-auto"
-              src={leetCode}
-              width={150}
-              height={150}
-            />
+          <div className="flex justify-between items-center mb-4">
+            <div className="w-full h-20 overflow-hidden">
+              <img
+                className="mx-auto h-20 w-auto"
+                src={leetCode}
+                width={150}
+                height={150}
+              />
+            </div>
+            <ThemeToggle />
           </div>
           <div className="text-center">
-            <h1 className=" font-bold text-3xl text-white">
+            <h1 className="font-bold text-3xl">
               LeetCode <span className="text-whisperOrange">Whisper</span>
             </h1>
-            <p className="text-base text-slate-400">
+            <p className="text-base text-muted-foreground">
               Your Companion to Beat LeetCode!
             </p>
           </div>
           <div className="mt-10 flex flex-col gap-2">
-            <label htmlFor="text" className="text-white font-bold text-xl">
+            <label htmlFor="text" className="font-bold text-xl">
               OpenAI API key
             </label>
             <Input
               value={openAIKey}
               onChange={(e) => setOpenAIKey(e.target.value)}
               placeholder="sk-proj-xxxx"
-              className="text-xs text-white focus:outline-none outline-none  border-[1px] border-slate-600"
+              className="text-xs focus:outline-none outline-none"
             />
 
-            <Button onClick={handleAddOpenAPIKey} className="dark">
+            <Button onClick={handleAddOpenAPIKey}>
               Save
             </Button>
           </div>
-          <div className=" h-16 flex items-center justify-center">
-            <p className="text-white text-[14px]">
+          <div className="h-16 flex items-center justify-center">
+            <p className="text-[14px]">
               Want more features?&nbsp;
               <a
                 href="https://github.com/piyushgarg-dev/leetcode-whisper-chrome-extension"
