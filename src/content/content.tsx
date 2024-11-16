@@ -140,12 +140,19 @@ const ContentPage: React.FC = () => {
 
   const metaDescriptionEl = document.querySelector('meta[name=description]')
 
+  // the button that contains the programming language
+  const button = document.querySelector('.rounded.items-center.whitespace-nowrap.focus\\:outline-none.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.dark\\:text-text-secondary.active\\:bg-transparent.dark\\:active\\:bg-dark-transparent.hover\\:bg-fill-secondary.dark\\:hover\\:bg-fill-secondary.px-1\\.5.py-0\\.5.text-sm.font-normal.group');
+
+  const buttonContent = button ? button.textContent || 'C++' : 'C++';
+  // If prgramming language not found - set it to C++
+
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string
 
   return (
     <div className="__chat-container dark">
       {chatboxExpanded && (
-        <ChatBox context={{ problemStatement, programmingLanguage: 'C++' }} />
+        <ChatBox context={{ problemStatement, programmingLanguage: buttonContent }} />
+        
       )}
       <div className="flex justify-end">
         <Button onClick={() => setChatboxExpanded(!chatboxExpanded)}>
