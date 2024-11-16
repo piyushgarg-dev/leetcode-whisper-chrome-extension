@@ -2,4 +2,180 @@
   position: fixed;
   bottom: 30px;
   right: 30px;
+  font-family: "Press Start 2P", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Code block styling */
+pre {
+  background-color: #000000 !important;
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  /* border-radius: 4px!important; */
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1E1E1E;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #424242;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4f4f4f;
+}
+
+/* Button hover effects */
+.button-hover-effect:hover {
+  background-color: #333333;
+  color: white;
+}
+
+/* Code line styling */
+.hljs-line {
+  padding: 0 1rem;
+}
+
+.hljs-line:hover {
+  background-color: #2a2a2a;
+}
+
+/* Hint box styling */
+.hint-box {
+  background: #1E1E1E;
+  border: 1px solid #333;
+  border-radius: 6px;
+  position: relative;
+}
+
+/* Blur effect transition */
+.blur-effect {
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.blur-effect.blurred {
+  filter: blur(8px);
+  user-select: none;
+}
+
+/* Eye button hover effect */
+.eye-button {
+  transition: all 0.2s ease;
+}
+
+.eye-button:hover {
+  background-color: #333;
+}
+
+/* Optional: Add a subtle hover effect to the hint box */
+.hint-box:hover {
+  border-color: #444;
+}
+
+/* Code header styling */
+.code-header {
+  position: relative;
+  overflow: hidden;
+}
+
+.code-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 1px;
+  background: linear-gradient(
+    to right,
+    rgba(99, 102, 241, 0.2),
+    rgba(168, 85, 247, 0.2)
+  );
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Button hover effects */
+.code-header button {
+  position: relative;
+  overflow: hidden;
+}
+
+.code-header button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(99, 102, 241, 0.1),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.code-header button:hover::after {
+  opacity: 1;
+}
+
+/* Select styling */
+.select-trigger {
+  position: relative;
+  overflow: hidden;
+}
+
+.select-trigger:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* Copy button success animation */
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.copy-success {
+  animation: successPulse 0.3s ease-in-out;
+}
+
+/* Optional: Add a floating tooltip */
+.copy-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem;
+  background-color: rgba(16, 185, 129, 0.9);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: white;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.copy-button:hover .copy-tooltip {
+  opacity: 1;
 }
