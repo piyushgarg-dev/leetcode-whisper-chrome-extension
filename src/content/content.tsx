@@ -53,8 +53,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 }) => {
   const [value, setValue] = React.useState('')
   const [chatHistory, setChatHistory] = React.useState<ChatHistory[]>([])
-  const [isResponseLoading, setIsResponseLoading] =
-    React.useState<boolean>(false)
+  const [isResponseLoading, setIsResponseLoading] = React.useState<boolean>(
+    false
+  )
   // const chatBoxRef = useRef<HTMLDivElement>(null)
 
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -90,7 +91,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     let programmingLanguage = 'UNKNOWN'
 
     const changeLanguageButton = document.querySelector(
-      'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
+      '[id="editor"] [data-headlessui-state] button'
     )
     if (changeLanguageButton) {
       if (changeLanguageButton.textContent)
