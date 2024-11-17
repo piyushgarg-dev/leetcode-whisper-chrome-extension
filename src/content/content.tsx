@@ -36,7 +36,7 @@ interface ChatBoxProps {
 interface ChatMessage {
   role: 'user' | 'assistant';
   message: string;
-  type: 'text' | 'markdown';
+  type: 'text' | 'markdown' | 'error';
   assistantResponse?: {
     feedback?: string;
     hints?: string[];
@@ -81,46 +81,64 @@ function ChatBox({ context, visible }: ChatBoxProps) {
       .replace('{{programming_language}}', programmingLanguage)
       .replace('{{user_code}}', extractedCode);
 
-    const apiResponse = await openai.chat.completions.create({
-      model: 'chatgpt-4o-latest',
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPromptModified },
-        ...chatHistory.map(
-          (chat) =>
-            ({
-              role: chat.role,
-              content: chat.message,
-            }) as ChatCompletionMessageParam
-        ),
-        {
-          role: 'user',
-          content: `User Prompt: ${userMessage}\n\nCode: ${extractedCode}`,
-        },
-      ],
-    })
-
-    if (apiResponse.choices[0].message.content) {
-      const result = JSON.parse(apiResponse.choices[0].message.content);
-
-      if ('output' in result) {
-        setChatHistory((prev) => [
-          ...prev,
+    try {
+      const apiResponse = await openai.chat.completions.create({
+        model: 'chatgpt-4o-latest',
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: systemPromptModified },
+          ...chatHistory.map(
+            (chat) =>
+              ({
+                role: chat.role,
+                content: chat.message,
+              }) as ChatCompletionMessageParam
+          ),
           {
-            message: 'NA',
-            role: 'assistant',
-            type: 'markdown',
-            assistantResponse: {
-              feedback: result.output.feedback,
-              hints: result.output.hints,
-              snippet: result.output.snippet,
-              programmingLanguage: result.output.programmingLanguage,
-            },
+            role: 'user',
+            content: `User Prompt: ${userMessage}\n\nCode: ${extractedCode}`,
           },
-        ]);
-        chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
+        ],
+      })
+
+      if (apiResponse.choices[0].message.content) {
+        const result = JSON.parse(apiResponse.choices[0].message.content);
+
+        if ('output' in result) {
+          setChatHistory((prev) => [
+            ...prev,
+            {
+              message: 'NA',
+              role: 'assistant',
+              type: 'markdown',
+              assistantResponse: {
+                feedback: result.output.feedback,
+                hints: result.output.hints,
+                snippet: result.output.snippet,
+                programmingLanguage: result.output.programmingLanguage,
+              },
+            },
+          ]);
+          chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
       }
+    } catch (error: any) {
+      let errorMessage: string = 'Something went wrong. Please try again later.';
+      if (error.response) {
+        errorMessage = `API Error: ${error.response?.status} - ${error.response.data?.error?.message || 'Unknown error'}`;
+      } else if (error.request) {
+        errorMessage = 'Network Error: Unable to reach the API. Please check your connection.';
+      }
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          message: errorMessage,
+          type: 'error',
+        },
+      ]);
     }
+
   }
 
   const onSendMessage = () => {
@@ -152,45 +170,51 @@ function ChatBox({ context, visible }: ChatBoxProps) {
               {message.role === 'user' && <>{message.message}</>}
               {message.role === 'assistant' && (
                 <>
-                  <p>{message.assistantResponse?.feedback}</p>
+                  {message.type === 'error' ? (
+                    <p>{message.message}</p> // Display the error message
+                  ) : (
+                    <>
+                      <p>{message.assistantResponse?.feedback}</p>
 
-                  <Accordion type="multiple">
-                    {message.assistantResponse?.hints && (
-                      <AccordionItem value="item-1">
-                        <AccordionTrigger>Hints 👀</AccordionTrigger>
-                        <AccordionContent>
-                          <ul className="space-y-4">
-                            {message.assistantResponse?.hints?.map((e) => (
-                              <li key={e}>{e}</li>
-                            ))}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-                    )}
-                    {message.assistantResponse?.snippet && (
-                      <AccordionItem value="item-2">
-                        <AccordionTrigger>Code 🧑🏻‍💻</AccordionTrigger>
+                      <Accordion type="multiple">
+                        {message.assistantResponse?.hints && (
+                          <AccordionItem value="item-1">
+                            <AccordionTrigger>Hints 👀</AccordionTrigger>
+                            <AccordionContent>
+                              <ul className="space-y-4">
+                                {message.assistantResponse?.hints?.map((e) => (
+                                  <li key={e}>{e}</li>
+                                ))}
+                              </ul>
+                            </AccordionContent>
+                          </AccordionItem>
+                        )}
+                        {message.assistantResponse?.snippet && (
+                          <AccordionItem value="item-2">
+                            <AccordionTrigger>Code 🧑🏻‍💻</AccordionTrigger>
 
-                        <AccordionContent>
-                          <pre className="bg-black p-3 rounded-md shadow-lg ">
-                            <code>{message.assistantResponse?.snippet}</code>
-                          </pre>
-                          <Button
-                            className="p-0 mt-2"
-                            size="sm"
-                            variant="ghost"
-                            onClick={() =>
-                              navigator.clipboard.writeText(
-                                `${message.assistantResponse?.snippet}`
-                              )
-                            }
-                          >
-                            <ClipboardCopy />
-                          </Button>
-                        </AccordionContent>
-                      </AccordionItem>
-                    )}
-                  </Accordion>
+                            <AccordionContent>
+                              <pre className="bg-black p-3 rounded-md shadow-lg ">
+                                <code>{message.assistantResponse?.snippet}</code>
+                              </pre>
+                              <Button
+                                className="p-0 mt-2"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() =>
+                                  navigator.clipboard.writeText(
+                                    `${message.assistantResponse?.snippet}`
+                                  )
+                                }
+                              >
+                                <ClipboardCopy />
+                              </Button>
+                            </AccordionContent>
+                          </AccordionItem>
+                        )}
+                      </Accordion>
+                    </>
+                  )}
                 </>
               )}
             </div>
