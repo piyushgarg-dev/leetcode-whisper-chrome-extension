@@ -1,3 +1,13 @@
+import React, { useRef } from 'react'
+import { Button } from '@/components/ui/button'
+import { Bot, ClipboardCopy, Send, SendHorizontal } from 'lucide-react'
+import OpenAI from 'openai'
+
+import './style.css'
+import { Input } from '@/components/ui/input'
+import { SYSTEM_PROMPT } from '@/constants/prompt'
+import { extractCode } from './util'
+import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 import React, { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Bot, Copy, Send } from 'lucide-react'
@@ -13,6 +23,15 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 
+import { cn } from '@/lib/utils'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
+
+function createOpenAISDK(apiKey: string) {
+  return new OpenAI({
+    apiKey,
+    dangerouslyAllowBrowser: true,
+  })
+}
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 
@@ -35,6 +54,28 @@ import {
 interface ChatBoxProps {
   visible: boolean
   context: {
+    problemStatement: string
+  }
+}
+
+interface ChatMessage {
+  role: 'user' | 'assistant'
+  message: string
+  type: 'text' | 'markdown'
+  assistantResponse?: {
+    feedback?: string
+    hints?: string[]
+    snippet?: string
+    programmingLanguage?: string
+  }
+}
+
+function ChatBox({ context, visible }: ChatBoxProps) {
+  const [value, setValue] = React.useState('')
+  const [chatHistory, setChatHistory] = React.useState<ChatMessage[]>([])
+
+  const chatBoxRef = useRef<HTMLDivElement>(null)
+
     problemStatement: string
   }
   model: ValidModel
@@ -89,8 +130,10 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
     let programmingLanguage = 'UNKNOWN'
 
+    const userMessage = value
+    const userCurrentCodeContainer = document.querySelectorAll('.view-line')
     const changeLanguageButton = document.querySelector(
-      'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
+      '[id="editor"] [data-headlessui-state] button'
     )
     if (changeLanguageButton) {
       if (changeLanguageButton.textContent)
@@ -106,6 +149,20 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     )
       .replace(/{{programming_language}}/g, programmingLanguage)
       .replace(/{{user_code}}/g, extractedCode)
+
+    const apiResponse = await openai.chat.completions.create({
+      model: 'chatgpt-4o-latest',
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPromptModified },
+        ...chatHistory.map(
+          (chat) =>
+            ({
+              role: chat.role,
+              content: chat.message,
+            } as ChatCompletionMessageParam)
+        ),
+      .replace('{{user_code}}', extractedCode)
 
     const PCH = parseChatHistory(chatHistory)
 
@@ -123,6 +180,30 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           role: 'assistant',
           content: error.message,
         },
+      ],
+    })
+
+    if (apiResponse.choices[0].message.content) {
+      const result = JSON.parse(apiResponse.choices[0].message.content)
+
+      if ('output' in result) {
+        setChatHistory((prev) => [
+          ...prev,
+          {
+            message: 'NA',
+            role: 'assistant',
+            type: 'markdown',
+            assistantResponse: {
+              feedback: result.output.feedback,
+              hints: result.output.hints,
+              snippet: result.output.snippet,
+              programmingLanguage: result.output.programmingLanguage,
+            },
+          },
+        ])
+        chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }
+    }
       ])
       lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
@@ -142,6 +223,15 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     setIsResponseLoading(false)
   }
 
+  const onSendMessage = () => {
+    setChatHistory((prev) => [
+      ...prev,
+      { role: 'user', message: value, type: 'text' },
+    ])
+    chatBoxRef.current?.scrollIntoView({ behavior: 'smooth' })
+    setValue('')
+    handleGenerateAIResponse()
+  }
   const onSendMessage = (value: string) => {
     setIsResponseLoading(true)
     setChatHistory((prev) => [...prev, { role: 'user', content: value }])
@@ -294,6 +384,10 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       <CardFooter>
         <form
           onSubmit={(event) => {
+            event.preventDefault()
+            if (value.length === 0) return
+            onSendMessage()
+            setValue('')
             event.preventDefault()
             if (value.trim().length === 0) return
             onSendMessage(value)
