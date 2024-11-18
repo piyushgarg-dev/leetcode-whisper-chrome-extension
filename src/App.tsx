@@ -107,7 +107,7 @@ const Popup: React.FC = () => {
           >
             <div className="space-y-2">
               <label htmlFor="text" className="text-xs text-muted-foreground">
-                select a model
+                Select a model
               </label>
               <Select
                 onValueChange={(v: ValidModel) => heandelModel(v)}
@@ -145,7 +145,7 @@ const Popup: React.FC = () => {
               />
             </div>
             <Button disabled={isloading} type="submit" className="w-full mt-2">
-              save API Key
+              Save API Key
             </Button>
           </form>
           {submitMessage ? (
