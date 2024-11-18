@@ -13,7 +13,6 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-
   "content_scripts": [
     {
       "js": ["src/content.tsx"],
@@ -22,5 +21,14 @@
   ],
   "background": {
     "service_worker": "src/background.js"
+  },
+  "commands": {
+    "open_ai_chat": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+L",
+        "mac": "Command+Shift+A"
+      },
+      "description": "Open LeetCode Whisper AI Chat"
+    }
   }
 }
