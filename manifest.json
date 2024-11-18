@@ -25,7 +25,7 @@
   "commands": {
     "open_ai_chat": {
       "suggested_key": {
-        "default": "Ctrl+Shift+L",
+        "default": "Ctrl+Shift+A",
         "mac": "Command+Shift+A"
       },
       "description": "Open LeetCode Whisper AI Chat"
