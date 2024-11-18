@@ -5,7 +5,7 @@ import { Highlight, themes } from 'prism-react-renderer'
 import { Input } from '@/components/ui/input'
 import { SYSTEM_PROMPT } from '@/constants/prompt'
 import { extractCode } from './util'
-
+import Draggable from 'react-draggable';
 import {
   Accordion,
   AccordionContent,
@@ -361,7 +361,8 @@ const ContentPage: React.FC = () => {
   }, [])
 
   return (
-    <div
+    <Draggable bounds="body">
+      <div
       className="dark z-50"
       style={{
         position: 'fixed',
@@ -447,6 +448,7 @@ const ContentPage: React.FC = () => {
         </Button>
       </div>
     </div>
+    </Draggable>
   )
 }
 
