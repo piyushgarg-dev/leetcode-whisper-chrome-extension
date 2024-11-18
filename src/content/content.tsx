@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Bot, Copy, Dot, Send } from 'lucide-react'
+import { Bot, Copy, Dot, Send, Trash2 } from 'lucide-react'
 import { Highlight, themes } from 'prism-react-renderer'
 import { Input } from '@/components/ui/input'
 import { SYSTEM_PROMPT } from '@/constants/prompt'
@@ -69,7 +69,17 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   const [totalMessages, setTotalMessages] = React.useState<number>(0)
   const [isPriviousMsgLoading, setIsPriviousMsgLoading] =
     React.useState<boolean>(false)
-  const { fetchChatHistory, saveChatHistory } = useIndexDB()
+  const { fetchChatHistory, saveChatHistory, deleteChatHistory } = useIndexDB()
+
+  const handleDeleteChatHistory = async () => {
+    if(window.confirm('Are you sure you want to delete all chat history?')){
+      await deleteChatHistory(problemName)
+      setChatHistory([])
+      setPreviousChatHistory([])
+      setOffset(0)
+      setTotalMessages(0)
+    }
+  }
 
   const getProblemName = () => {
     const url = window.location.href
@@ -249,25 +259,38 @@ const ChatBox: React.FC<ChatBoxProps> = ({
             <h6 className="font-normal text-xs">Always online</h6>
           </div>
         </div>
-        <Select
-          onValueChange={(v: ValidModel) => heandelModel(v)}
-          value={selectedModel}
-        >
-          <SelectTrigger className="w-[180px] border-none shadow-none">
-            <SelectValue placeholder="Select model" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Model</SelectLabel>
-              <SelectSeparator />
-              {VALID_MODELS.map((modelOption) => (
-                <SelectItem key={modelOption.name} value={modelOption.name}>
-                  {modelOption.display}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col gap-2 items-center justify-start">
+          <Select
+            onValueChange={(v: ValidModel) => heandelModel(v)}
+            value={selectedModel}
+          >
+            <SelectTrigger className="w-[180px] border-none shadow-none">
+              <SelectValue placeholder="Select model" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Model</SelectLabel>
+                <SelectSeparator />
+                {VALID_MODELS.map((modelOption) => (
+                  <SelectItem key={modelOption.name} value={modelOption.name}>
+                    {modelOption.display}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <div className="flex items-center">
+            {chatHistory.length > 0 && (
+              <Button
+                variant="warning"
+                size="small"
+                onClick={handleDeleteChatHistory}
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Clear History
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
       <CardContent className="p-2">
         {chatHistory.length > 0 ? (
