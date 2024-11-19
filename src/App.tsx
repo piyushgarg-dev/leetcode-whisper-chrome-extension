@@ -80,7 +80,12 @@ const Popup: React.FC = () => {
       setApikey((await getKeyModel(await selectModel())).apiKey)
     }
   }
-
+  const getApiKeyPlaceholder = (model: ValidModel | null | undefined) => {
+    if (!model) return "Enter API Key"
+    if (model.startsWith('openai')) return "Enter OpenAI API Key"
+    if (model.startsWith('gemini')) return "Enter Google API Key"
+    return "Enter API Key"
+  }
   return (
     <div className="relative p-4 w-[350px] bg-background">
       <Show show={isLoaded}>
@@ -136,13 +141,14 @@ const Popup: React.FC = () => {
               <label htmlFor="text" className="text-xs text-muted-foreground">
                 API Key {model ? `for ${model}` : ''}
               </label>
-              <HideApiKey
+             <HideApiKey
                 value={apikey || ''}
                 onChange={(e) => setApikey(e.target.value)}
-                placeholder="Enter OpenAI API Key"
+                placeholder={getApiKeyPlaceholder(selectedModel)}
                 disabled={!model}
                 required
               />
+            </div>
             </div>
             <Button disabled={isloading} type="submit" className="w-full mt-2">
               save API Key
