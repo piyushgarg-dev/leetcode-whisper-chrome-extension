@@ -7,9 +7,9 @@ export const outputSchema = z.object({
     .max(2, 'You can only provide up to 2 hints.')
     .optional()
     .describe('max 2 hints'),
-  snippet: z
-    .string()
+  snippet: z.string().optional().describe('code snippet should be in format.'),
+  programmingLanguage: z
+    .enum(['cpp', 'jsx', 'jsonp', 'java', 'javascript', 'python', 'sql', 'c'])
     .optional()
-    .describe('code snippet should be in format.'),
-  programmingLanguage: z.string().optional(),
+    .describe('Programming language code as supports by prismjs'),
 })
