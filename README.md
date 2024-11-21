@@ -2,9 +2,9 @@
 # 🚀 Leet Code Whisper - Your AI Coding Companion! 🤖
 
 ![GitHub license](https://img.shields.io/badge/license-MIT-green)  
-![Version](https://img.shields.io/badge/version-1.0.0-blue)  
 ![Chrome Web Store](https://img.shields.io/chrome-web-store/v/ejdmdgdlpbpgidgcgbmenlbolggniaia)  
 ![GitHub issues](https://img.shields.io/github/issues/piyushgarg-dev/leetcode-whisper-chrome-extension)  
+![Open a PR](https://img.shields.io/github/issues-pr/piyushgarg-dev/leetcode-whisper-chrome-extension?label=Open%20a%20PR)
 ![Contributors](https://img.shields.io/github/contributors/piyushgarg-dev/leetcode-whisper-chrome-extension)  
 
 ## 📝 Overview
@@ -36,7 +36,7 @@ Follow these steps to set up and run **Leet Code Whisper** locally:
 2. **Install Dependencies**  
    Ensure you have Node.js and npm installed. Then run:  
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Build the Extension**  
