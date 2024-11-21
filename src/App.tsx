@@ -145,7 +145,7 @@ const Popup: React.FC = () => {
               />
             </div>
             <Button disabled={isloading} type="submit" className="w-full mt-2">
-              save API Key
+              Save API Key
             </Button>
           </form>
           {submitMessage ? (
