@@ -50,13 +50,13 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
+
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
+import BeatLoader from "react-spinners/BeatLoader";
 interface ChatBoxProps {
   visible: boolean
   context: {
@@ -277,7 +277,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           </div>
           <div>
             <h3 className="font-bold text-lg">Need Help?</h3>
-            <h6 className="font-normal text-xs">Always online</h6>
+            <h6 className="font-normal text-xs">{isResponseLoading ? 'Typing...' : 'Online'}</h6>
           </div>
         </div>
         <DropdownMenu>
@@ -447,9 +447,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
               </div>
             ))}
             {isResponseLoading && (
-              <div className={'flex w-max max-w-[75%] flex-col my-2'}>
-                <div className="w-5 h-5 rounded-full animate-pulse bg-primary"></div>
-              </div>
+             <BeatLoader color='white' size={10}/>
             )}
             <div ref={lastMessageRef} />
           </ScrollArea>
