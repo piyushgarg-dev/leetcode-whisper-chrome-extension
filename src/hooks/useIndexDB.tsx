@@ -1,5 +1,9 @@
 import { ChatHistory } from '@/interface/chatHistory'
-import { getChatHistory, saveChatHistory } from '@/lib/indexedDB'
+import {
+  clearChatHistory,
+  getChatHistory,
+  saveChatHistory,
+} from '@/lib/indexedDB'
 
 export const useIndexDB = () => {
   return {
@@ -13,6 +17,10 @@ export const useIndexDB = () => {
       offset: number
     ) => {
       return await getChatHistory(problemName, limit, offset)
+    },
+
+    clearChatHistory: async (problemName: string) => {
+      await clearChatHistory(problemName)
     },
   }
 }

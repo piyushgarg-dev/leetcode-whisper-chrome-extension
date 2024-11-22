@@ -1,6 +1,13 @@
 import React, { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Bot, Copy, Dot, Send } from 'lucide-react'
+import {
+  Bot,
+  Copy,
+  EllipsisVertical,
+  Eraser,
+  Send,
+  Settings,
+} from 'lucide-react'
 import { Highlight, themes } from 'prism-react-renderer'
 import { Input } from '@/components/ui/input'
 import { SYSTEM_PROMPT } from '@/constants/prompt'
@@ -33,6 +40,22 @@ import {
 } from '@/components/ui/select'
 import { LIMIT_VALUE } from '@/lib/indexedDB'
 import { useIndexDB } from '@/hooks/useIndexDB'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface ChatBoxProps {
   visible: boolean
@@ -88,6 +111,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       inputFieldRef.current?.focus()
     }, 0)
   }, [chatHistory, isResponseLoading, visible])
+
+  const heandelClearChat = async () => {
+    const { clearChatHistory } = useIndexDB()
+    await clearChatHistory(problemName)
+    setChatHistory([])
+    setPreviousChatHistory([])
+  }
+
   /**
    * Handles the generation of an AI response.
    *
@@ -249,25 +280,58 @@ const ChatBox: React.FC<ChatBoxProps> = ({
             <h6 className="font-normal text-xs">Always online</h6>
           </div>
         </div>
-        <Select
-          onValueChange={(v: ValidModel) => heandelModel(v)}
-          value={selectedModel}
-        >
-          <SelectTrigger className="w-[180px] border-none shadow-none">
-            <SelectValue placeholder="Select model" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Model</SelectLabel>
-              <SelectSeparator />
-              {VALID_MODELS.map((modelOption) => (
-                <SelectItem key={modelOption.name} value={modelOption.name}>
-                  {modelOption.display}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="tertiary" size={'icon'}>
+              <EllipsisVertical size={18} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel className="flex items-center">
+              <Settings size={16} strokeWidth={1.5} className="mr-2" />{' '}
+              {
+                VALID_MODELS.find((model) => model.name === selectedModel)
+                  ?.display
+              }
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Bot size={16} strokeWidth={1.5} /> Change Model
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuRadioGroup
+                      value={selectedModel}
+                      onValueChange={(v) => heandelModel(v as ValidModel)}
+                    >
+                      {VALID_MODELS.map((modelOption) => (
+                        <DropdownMenuRadioItem
+                          key={modelOption.name}
+                          value={modelOption.name}
+                        >
+                          {modelOption.display}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={heandelClearChat}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor =
+                  'rgb(185 28 28 / 0.35)')
+              }
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
+            >
+              <Eraser size={14} strokeWidth={1.5} /> Clear Chat
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <CardContent className="p-2">
         {chatHistory.length > 0 ? (

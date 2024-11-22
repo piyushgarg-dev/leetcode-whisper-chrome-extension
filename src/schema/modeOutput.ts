@@ -1,5 +1,32 @@
 import { z } from 'zod'
 
+const SupportedLanguages = [
+  'c',
+  'cpp',
+  'csharp',
+  'cs',
+  'dart',
+  'elixir',
+  'erlang',
+  'go',
+  'java',
+  'javascript',
+  'jsonp',
+  'jsx',
+  'php',
+  'python',
+  'racket',
+  'rkt',
+  'ruby',
+  'rb',
+  'rust',
+  'scala',
+  'sql',
+  'Swift',
+  'typescript',
+  'tsx',
+] as const
+
 export const outputSchema = z.object({
   feedback: z.string(),
   hints: z
@@ -9,7 +36,7 @@ export const outputSchema = z.object({
     .describe('max 2 hints'),
   snippet: z.string().optional().describe('code snippet should be in format.'),
   programmingLanguage: z
-    .enum(['cpp', 'jsx', 'jsonp', 'java', 'javascript', 'python', 'sql', 'c'])
+    .enum(SupportedLanguages)
     .optional()
     .describe('Programming language code as supports by prismjs'),
 })
