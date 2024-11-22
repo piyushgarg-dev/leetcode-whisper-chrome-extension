@@ -46,4 +46,9 @@ export const getChatHistory = async (
   }
 }
 
+export const clearChatHistory = async (problemName: string) => {
+  const db = await dbPromise
+  await db.delete('chats', problemName)
+}
+
 export const LIMIT_VALUE = 10

@@ -44,7 +44,7 @@ export abstract class ModalInterface {
  */
 export type GenerateResponseReturnType = Promise<{
   error: Error | null
-  success: z.infer<typeof outputSchema> | null
+  success: z.infer<typeof outputSchema> | null | any
 }>
 
 /**
