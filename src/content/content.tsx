@@ -117,6 +117,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     await clearChatHistory(problemName)
     setChatHistory([])
     setPreviousChatHistory([])
+    setOffset(0)
+    setTotalMessages(0)
   }
 
   /**
@@ -137,77 +139,98 @@ const ChatBox: React.FC<ChatBoxProps> = ({
    * @returns {Promise<void>} A promise that resolves when the AI response generation is complete.
    */
   const handleGenerateAIResponse = async (): Promise<void> => {
-    const modalService = new ModalService()
+    try {
+      const modalService = new ModalService()
+      modalService.selectModal(model, apikey)
 
-    modalService.selectModal(model, apikey)
+      let programmingLanguage = 'UNKNOWN'
 
-    let programmingLanguage = 'UNKNOWN'
+      const changeLanguageButton = document.querySelector(
+        'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
+      )
+      if (changeLanguageButton) {
+        if (changeLanguageButton.textContent)
+          programmingLanguage = changeLanguageButton.textContent
+      }
+      const userCurrentCodeContainer = document.querySelectorAll('.view-line')
 
-    const changeLanguageButton = document.querySelector(
-      'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
-    )
-    if (changeLanguageButton) {
-      if (changeLanguageButton.textContent)
-        programmingLanguage = changeLanguageButton.textContent
-    }
-    const userCurrentCodeContainer = document.querySelectorAll('.view-line')
+      const extractedCode = extractCode(userCurrentCodeContainer)
 
-    const extractedCode = extractCode(userCurrentCodeContainer)
+      const systemPromptModified = SYSTEM_PROMPT.replace(
+        /{{problem_statement}}/gi,
+        context.problemStatement
+      )
+        .replace(/{{programming_language}}/g, programmingLanguage)
+        .replace(/{{user_code}}/g, extractedCode)
+        .replace(/{{user_prompt}}/g, value)
 
-    const systemPromptModified = SYSTEM_PROMPT.replace(
-      /{{problem_statement}}/gi,
-      context.problemStatement
-    )
-      .replace(/{{programming_language}}/g, programmingLanguage)
-      .replace(/{{user_code}}/g, extractedCode)
+      const PCH = parseChatHistory(chatHistory)
 
-    const PCH = parseChatHistory(chatHistory)
+      const result = await Promise.race([
+        modalService.generate({
+          prompt: `${value}`,
+          systemPrompt: systemPromptModified,
+          messages: PCH,
+          extractedCode: extractedCode,
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Request timed out after 10 seconds')), 10000)
+        )
+      ]).catch(error => ({ error: { message: error.message } })) as { error?: { message: string }, success?: string };
 
-    const { error, success } = await modalService.generate({
-      prompt: `${value}`,
-      systemPrompt: systemPromptModified,
-      messages: PCH,
-      extractedCode: extractedCode,
-    })
+      const { error, success } = result;
 
-    if (error) {
+      if (error) {
+        const errorMessage: ChatHistory = {
+          role: 'assistant',
+          content: error.message,
+        }
+        await saveChatHistory(problemName, [
+          ...priviousChatHistory,
+          { role: 'user', content: value },
+          errorMessage,
+        ])
+        setPreviousChatHistory((prev) => [...prev, errorMessage])
+        setChatHistory((prev) => {
+          const updatedChatHistory: ChatHistory[] = [...prev, errorMessage]
+          return updatedChatHistory
+        })
+        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }
+
+      if (success) {
+        const res: ChatHistory = {
+          role: 'assistant',
+          content: success,
+        }
+        await saveChatHistory(problemName, [
+          ...priviousChatHistory,
+          { role: 'user', content: value },
+          res,
+        ])
+        setPreviousChatHistory((prev) => [...prev, res])
+        setChatHistory((prev) => [...prev, res])
+        setValue('')
+        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }
+    } catch (error) {
       const errorMessage: ChatHistory = {
         role: 'assistant',
-        content: error.message,
+        content: error instanceof Error ? error.message : 'An unexpected error occurred',
       }
       await saveChatHistory(problemName, [
         ...priviousChatHistory,
         { role: 'user', content: value },
         errorMessage,
       ])
-      setPreviousChatHistory((prev) => [...prev, errorMessage])
-      setChatHistory((prev) => {
-        const updatedChatHistory: ChatHistory[] = [...prev, errorMessage]
-        return updatedChatHistory
-      })
-      lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
+      setPreviousChatHistory(prev => [...prev, errorMessage])
+      setChatHistory(prev => [...prev, errorMessage])
+    } finally {
+      setIsResponseLoading(false)
+      setTimeout(() => {
+        inputFieldRef.current?.focus()
+      }, 0)
     }
-
-    if (success) {
-      const res: ChatHistory = {
-        role: 'assistant',
-        content: success,
-      }
-      await saveChatHistory(problemName, [
-        ...priviousChatHistory,
-        { role: 'user', content: value },
-        res,
-      ])
-      setPreviousChatHistory((prev) => [...prev, res])
-      setChatHistory((prev) => [...prev, res])
-      setValue('')
-      lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
-
-    setIsResponseLoading(false)
-    setTimeout(() => {
-      inputFieldRef.current?.focus()
-    }, 0)
   }
 
   const loadInitialChatHistory = async () => {
