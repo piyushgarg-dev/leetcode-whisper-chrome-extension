@@ -17,7 +17,8 @@
   "content_scripts": [
     {
       "js": ["src/content.tsx"],
-      "matches": ["https://leetcode.com/problems/*"]
+      "matches": ["https://leetcode.com/problems/*"],
+      "exclude_matches": ["https://leetcode.com/problems/post-solution/*"]
     }
   ],
   "background": {
