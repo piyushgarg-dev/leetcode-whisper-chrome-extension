@@ -117,8 +117,6 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     await clearChatHistory(problemName)
     setChatHistory([])
     setPreviousChatHistory([])
-    setOffset(0)
-    setTotalMessages(0)
   }
 
   /**
