@@ -145,9 +145,29 @@ const Popup: React.FC = () => {
               />
             </div>
             <Button disabled={isloading} type="submit" className="w-full mt-2">
-              save API Key
+              Save API Key
             </Button>
           </form>
+          <br />
+          <p className="text-white items-center text-center">
+  Don't have an API key?{" "}
+  {selectedModel && (
+    <a
+      className="underline"
+      href={
+        selectedModel === "gemini_1.5_pro"
+          ? "https://ai.google.dev/gemini-api/docs/api-key"
+          : "https://openai.com/api/"
+      }
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Get one!
+    </a>
+  )}
+</p>
+
+
           {submitMessage ? (
             <div
               className="mt-2 text-center text-sm text-muted-foreground flex items-center justify-center p-2 rounded-sm"
