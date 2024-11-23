@@ -55,4 +55,5 @@ export type GenerateResponseParamsType = {
   systemPrompt: string
   messages: ChatHistoryParsed[] | []
   extractedCode?: string
+  signal?: AbortSignal;
 }
