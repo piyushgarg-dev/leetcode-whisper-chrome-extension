@@ -11,7 +11,6 @@ import {
 import { Highlight, themes } from 'prism-react-renderer'
 import { Input } from '@/components/ui/input'
 import { SYSTEM_PROMPT } from '@/constants/prompt'
-import { extractCode } from './util'
 
 import {
   Accordion,
@@ -56,12 +55,15 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import factoryBuilder from '@/factoryBuilder'
+import { platform } from '@/interface/PlatformInterface'
 
 interface ChatBoxProps {
   visible: boolean
   context: {
     problemStatement: string
   }
+  platform : platform
   model: ValidModel
   apikey: string
   heandelModel: (v: ValidModel) => void
@@ -70,6 +72,7 @@ interface ChatBoxProps {
 
 const ChatBox: React.FC<ChatBoxProps> = ({
   context,
+  platform,
   visible,
   model,
   apikey,
@@ -94,13 +97,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     React.useState<boolean>(false)
   const { fetchChatHistory, saveChatHistory } = useIndexDB()
 
-  const getProblemName = () => {
-    const url = window.location.href
-    const match = /\/problems\/([^/]+)/.exec(url)
-    return match ? match[1] : 'Unknown Problem'
-  }
-
-  const problemName = getProblemName()
+  // geting problem name from the current platform
+  const problemName = platform.getProblemName()
   const inputFieldRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -140,19 +138,12 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     const modalService = new ModalService()
 
     modalService.selectModal(model, apikey)
+    
+    // getting programing laungage currently used by the user
+    const  programmingLanguage = platform.getProgramingLaungage()
 
-    let programmingLanguage = 'UNKNOWN'
-
-    const changeLanguageButton = document.querySelector(
-      'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
-    )
-    if (changeLanguageButton) {
-      if (changeLanguageButton.textContent)
-        programmingLanguage = changeLanguageButton.textContent
-    }
-    const userCurrentCodeContainer = document.querySelectorAll('.view-line')
-
-    const extractedCode = extractCode(userCurrentCodeContainer)
+    // get the currnt code written by the user for the current problem statement
+    const extractedCode = platform.getUserCode()
 
     const systemPromptModified = SYSTEM_PROMPT.replace(
       /{{problem_statement}}/gi,
@@ -500,8 +491,11 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 const ContentPage: React.FC = () => {
   const [chatboxExpanded, setChatboxExpanded] = React.useState<boolean>(false)
 
-  const metaDescriptionEl = document.querySelector('meta[name=description]')
-  const problemStatement = metaDescriptionEl?.getAttribute('content') as string
+  const currentPltform: platform = factoryBuilder()
+  
+
+  //const metaDescriptionEl = document.querySelector('meta[name=description]')
+  const problemStatement = currentPltform?.getProblemStatement()
 
   const [modal, setModal] = React.useState<ValidModel | null | undefined>(null)
   const [apiKey, setApiKey] = React.useState<string | null | undefined>(null)
@@ -626,6 +620,7 @@ const ContentPage: React.FC = () => {
         <ChatBox
           visible={chatboxExpanded}
           context={{ problemStatement }}
+          platform={currentPltform}
           model={modal}
           apikey={apiKey}
           heandelModel={heandelModel}
