@@ -1,11 +1,11 @@
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { VALID_MODELS } from '@/constants/valid_modals'
 import {
   GenerateResponseParamsType,
   GenerateResponseReturnType,
   ModalInterface,
-} from '../../interface/ModalInterface'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+} from '@/interface/ModalInterface'
 import { generateObjectResponce } from '../utils'
-import { VALID_MODELS } from '@/constants/valid_modals'
 
 export class GeminiAI_1_5_pro implements ModalInterface {
   name = 'gemini_1.5_pro'
