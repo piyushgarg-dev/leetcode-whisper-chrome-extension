@@ -13,5 +13,5 @@
 
 ### Checklist
 
-- [ ] Make sure to mention an issue, PR, or discussion on GitHub by referencing its hash number e.g: #100
+- [ ] Make sure to mention an issue, PR, or discussion on GitHub by referencing its hash number.
 - [ ] Check if any open issues are related to this PR; if so, be sure to tag them below.
