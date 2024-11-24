@@ -139,13 +139,13 @@ const Popup: React.FC = () => {
               <HideApiKey
                 value={apikey || ''}
                 onChange={(e) => setApikey(e.target.value)}
-                placeholder="Enter OpenAI API Key"
+                placeholder={`${['gemini_1.5_pro'].includes(selectedModel as string) ? 'Enter Gemini API key' : 'Enter OpenAI API Key'}`}
                 disabled={!model}
                 required
               />
             </div>
             <Button disabled={isloading} type="submit" className="w-full mt-2">
-              save API Key
+              Save Api Key
             </Button>
           </form>
           {submitMessage ? (

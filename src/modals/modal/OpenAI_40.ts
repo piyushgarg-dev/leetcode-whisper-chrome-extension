@@ -1,11 +1,11 @@
+import { createOpenAI } from '@ai-sdk/openai'
+import { generateObjectResponce } from '../utils'
+import { VALID_MODELS } from '@/constants/valid_modals'
 import {
   GenerateResponseParamsType,
   GenerateResponseReturnType,
   ModalInterface,
-} from '../../interface/ModalInterface'
-import { createOpenAI } from '@ai-sdk/openai'
-import { generateObjectResponce } from '../utils'
-import { VALID_MODELS } from '@/constants/valid_modals'
+} from '@/interface/ModalInterface'
 
 export class OpenAi_4o implements ModalInterface {
   name = 'openai_4o'
