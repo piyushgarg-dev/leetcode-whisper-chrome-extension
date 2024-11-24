@@ -1,3 +1,9 @@
+### Type of changes
+
+- [ ] Feature
+- [ ] BugFix
+- [ ] Other
+
 ### Description
 
 <!-- Please describe the change(s) made in your PR -->
