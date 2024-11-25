@@ -378,7 +378,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
             </DropdownMenu>
 
             <X
-              className="ml-4 cursor-pointer text-[24px]   hover:bg-gray-200 min-w-6 min-h-6"
+              className="ml-4 cursor-pointer text-[24px]  hover:bg-red-400 min-w-6 min-h-6"
               onClick={() => {
                 ChatboxExpanded(false)
                 Botvisible(true)
