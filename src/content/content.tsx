@@ -315,7 +315,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
               <Bot color="#000" className="h-6 w-6" />
             </div>
             <div className="flex flex-col gap-0">
-              <h3 className="font-bold text-lg">Your Buddy</h3>
+              <h3 className="font-bold text-lg">My Buddy</h3>
               <h6 className="font-normal text-sm">
                 {isResponseLoading ? 'Typing...' : 'Online'}
               </h6>
