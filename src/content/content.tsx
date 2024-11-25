@@ -8,9 +8,10 @@ import {
   Send,
   Settings,
   CircleStop,
+  X,
 } from 'lucide-react'
 import { Highlight, themes } from 'prism-react-renderer'
-import { Input } from '@/components/ui/input'
+
 import { SYSTEM_PROMPT } from '@/constants/prompt'
 import { extractCode } from './util'
 
@@ -57,6 +58,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import BeatLoader from 'react-spinners/BeatLoader'
+import { Dispatch, SetStateAction } from 'react'
+
 interface ChatBoxProps {
   visible: boolean
   context: {
@@ -66,6 +69,8 @@ interface ChatBoxProps {
   apikey: string
   heandelModel: (v: ValidModel) => void
   selectedModel: ValidModel | undefined
+  ChatboxExpanded: Dispatch<SetStateAction<boolean>>
+  Botvisible: Dispatch<SetStateAction<boolean>>
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({
@@ -75,6 +80,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   apikey,
   heandelModel,
   selectedModel,
+  ChatboxExpanded,
+  Botvisible,
 }) => {
   const [value, setValue] = React.useState('')
   const [chatHistory, setChatHistory] = React.useState<ChatHistory[]>([])
@@ -139,93 +146,91 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   const handleGenerateAIResponse = async (): Promise<void> => {
     try {
       // Create and configure ModalService
-      const modalService = new ModalService();
-      setCurrentModalService(modalService);
-      modalService.selectModal(model, apikey);
-  
-      console.log('API Key:', apikey);
-  
-      let programmingLanguage = 'UNKNOWN';
+      const modalService = new ModalService()
+      setCurrentModalService(modalService)
+      modalService.selectModal(model, apikey)
+
+      // console.log('API Key:', apikey);
+
+      let programmingLanguage = 'UNKNOWN'
       const changeLanguageButton = document.querySelector(
         'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
-      );
+      )
       if (changeLanguageButton && changeLanguageButton.textContent) {
-        programmingLanguage = changeLanguageButton.textContent;
+        programmingLanguage = changeLanguageButton.textContent
       }
-  
-      const userCurrentCodeContainer = document.querySelectorAll('.view-line');
-      const extractedCode = extractCode(userCurrentCodeContainer);
-  
+
+      const userCurrentCodeContainer = document.querySelectorAll('.view-line')
+      const extractedCode = extractCode(userCurrentCodeContainer)
+
       const systemPromptModified = SYSTEM_PROMPT.replace(
         /{{problem_statement}}/gi,
         context.problemStatement
       )
         .replace(/{{programming_language}}/g, programmingLanguage)
-        .replace(/{{user_code}}/g, extractedCode);
-  
-      const PCH = parseChatHistory(chatHistory);
-  
-      setIsResponseLoading(true);
-  
+        .replace(/{{user_code}}/g, extractedCode)
+
+      const PCH = parseChatHistory(chatHistory)
+
+      setIsResponseLoading(true)
+
       const { error, success } = await modalService.generate({
         prompt: value,
         systemPrompt: systemPromptModified,
         messages: PCH,
         extractedCode: extractedCode,
-      });
-  
+      })
+
       // If generation is stopped or superseded, do nothing
       if (!error && !success) {
-        console.log('Generation ignored: Stopped or invalidated.');
-        return;
+        console.log('Generation ignored: Stopped or invalidated.')
+        return
       }
-  
+
       // Handle Errors
       if (error) {
-        console.error('Generation error:', error.message);
+        console.error('Generation error:', error.message)
         const errorMessage: ChatHistory = {
           role: 'assistant',
           content: error.message,
-        };
+        }
         await saveChatHistory(problemName, [
           ...priviousChatHistory,
           { role: 'user', content: value },
           errorMessage,
-        ]);
-        setPreviousChatHistory((prev) => [...prev, errorMessage]);
-        setChatHistory((prev) => [...prev, errorMessage]);
-        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
-        return;
+        ])
+        setPreviousChatHistory((prev) => [...prev, errorMessage])
+        setChatHistory((prev) => [...prev, errorMessage])
+        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
+        return
       }
-  
+
       // Handle Success
       if (success) {
-        console.log('Generation success:', success);
+        console.log('Generation success:', success)
         const res: ChatHistory = {
           role: 'assistant',
           content: success,
-        };
+        }
         await saveChatHistory(problemName, [
           ...priviousChatHistory,
           { role: 'user', content: value },
           res,
-        ]);
-        setPreviousChatHistory((prev) => [...prev, res]);
-        setChatHistory((prev) => [...prev, res]);
-        setValue('');
-        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
+        ])
+        setPreviousChatHistory((prev) => [...prev, res])
+        setChatHistory((prev) => [...prev, res])
+        setValue('')
+        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
       }
     } catch (err) {
-      console.error('Unexpected error in handleGenerateAIResponse:', err);
+      console.error('Unexpected error in handleGenerateAIResponse:', err)
     } finally {
-      setIsResponseLoading(false);
+      setIsResponseLoading(false)
       setTimeout(() => {
-        inputFieldRef.current?.focus();
-      }, 0);
+        inputFieldRef.current?.focus()
+      }, 0)
     }
-  };
-  
-  
+  }
 
   const loadInitialChatHistory = async () => {
     const { totalMessageCount, chatHistory, allChatHistory } =
@@ -294,76 +299,99 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   if (!visible) return <></>
 
   return (
-    <Card className="mb-2 ">
+    <Card
+      className="mb-2 "
+      style={{
+        backgroundImage:
+          "url('https://res.cloudinary.com/dkkznj8re/image/upload/v1732533649/output-onlinepngtools_kfwrat.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
       <div className="flex gap-2 items-center justify-between h-20 rounded-t-lg p-4">
-        <div className="flex gap-2 items-center justify-start">
-          <div className="bg-white rounded-full p-2">
-            <Bot color="#000" className="h-6 w-6" />
+        <div className="flex gap-2 items-center w-full">
+          <div className="flex items-center gap-2">
+            <div className="bg-white rounded-full p-2">
+              <Bot color="#000" className="h-6 w-6" />
+            </div>
+            <div className="flex flex-col gap-0">
+              <h3 className="font-bold text-lg">Your Buddy</h3>
+              <h6 className="font-normal text-sm">
+                {isResponseLoading ? 'Typing...' : 'Online'}
+              </h6>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-lg">Need Help?</h3>
-            <h6 className="font-normal text-sm">
-              {isResponseLoading ? 'Typing...' : 'Online'}
-            </h6>
+          <div className="ml-auto flex items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="tertiary" size={'icon'}>
+                  <EllipsisVertical size={22} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel className="flex items-center">
+                  <Settings size={16} strokeWidth={2} className="mr-2" />{' '}
+                  {
+                    VALID_MODELS.find((model) => model.name === selectedModel)
+                      ?.display
+                  }
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Bot size={16} strokeWidth={1.5} /> Change Model
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuRadioGroup
+                          value={selectedModel}
+                          onValueChange={(v) => heandelModel(v as ValidModel)}
+                        >
+                          {VALID_MODELS.map((modelOption) => (
+                            <DropdownMenuRadioItem
+                              key={modelOption.name}
+                              value={modelOption.name}
+                            >
+                              {modelOption.display}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={heandelClearChat}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      'rgb(185 28 28 / 0.35)')
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = '')
+                  }
+                >
+                  <Eraser size={14} strokeWidth={1.5} /> Clear Chat
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <X
+              className="ml-4 cursor-pointer text-[24px]   hover:bg-gray-200 min-w-6 min-h-6"
+              onClick={() => {
+                ChatboxExpanded(false)
+                Botvisible(true)
+              }}
+            />
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="tertiary" size={'icon'}>
-              <EllipsisVertical size={18} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel className="flex items-center">
-              <Settings size={16} strokeWidth={1.5} className="mr-2" />{' '}
-              {
-                VALID_MODELS.find((model) => model.name === selectedModel)
-                  ?.display
-              }
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Bot size={16} strokeWidth={1.5} /> Change Model
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuRadioGroup
-                      value={selectedModel}
-                      onValueChange={(v) => heandelModel(v as ValidModel)}
-                    >
-                      {VALID_MODELS.map((modelOption) => (
-                        <DropdownMenuRadioItem
-                          key={modelOption.name}
-                          value={modelOption.name}
-                        >
-                          {modelOption.display}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={heandelClearChat}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor =
-                  'rgb(185 28 28 / 0.35)')
-              }
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-            >
-              <Eraser size={14} strokeWidth={1.5} /> Clear Chat
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
-      <CardContent className="p-2">
+
+      <CardContent className="p-2 scroll-none">
         {chatHistory.length > 0 ? (
           <ScrollArea
-            className="space-y-4 h-[500px] w-[400px] p-2"
+            className="space-y-4 h-[500px] w-[400px] p-2 scroll-none"
             ref={scrollAreaRef}
             onScroll={handleScroll}
           >
@@ -492,40 +520,42 @@ const ChatBox: React.FC<ChatBoxProps> = ({
             onSendMessage(value)
             setValue('')
           }}
-          className="flex w-full items-center space-x-2"
+          className="flex w-full items-center"
         >
-          <Input
-            id="message"
-            placeholder="Type your message..."
-            className="flex-1"
-            autoComplete="off"
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            disabled={isResponseLoading}
-            required
-            ref={inputFieldRef}
-          />
-          {isResponseLoading ? (
-            <Button
-              type="button"
-              className="bg-[#fafafa] rounded-lg text-black"
-              size="icon"
-              onClick={handleStopGeneration}
-            >
-              <CircleStop />
-              <span className="sr-only">Stop</span>
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              className="bg-[#fafafa] rounded-lg text-black"
-              size="icon"
-              disabled={value.length === 0}
-            >
-              <Send className="h-4 w-4" />
-              <span className="sr-only">Send</span>
-            </Button>
-          )}
+          <div className="flex items-center w-full  h-[50px] rounded-md">
+            <input
+              id="message"
+              placeholder="Type your message..."
+              className="flex-1 h-full rounded-l-md border-none focus:outline-none pl-5 bg-black text-[15px]"
+              autoComplete="off"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              disabled={isResponseLoading}
+              required
+              ref={inputFieldRef}
+            />
+            {isResponseLoading ? (
+              <Button
+                type="button"
+                className="bg-black text-black h-full px-3 flex items-center justify-center rounded-r-md "
+                size="icon"
+                onClick={handleStopGeneration}
+              >
+                <CircleStop className="h-7 w-7 text-white" />
+                {/* <span className="sr-only">Stop</span> */}
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                className="bg-black text-black h-full px-3 flex items-center justify-center rounded-r-md"
+                size="icon"
+                disabled={value.length === 0}
+              >
+                <Send className="h-6 w-6 text-white" />
+                {/* <span className="sr-only">Send</span> */}
+              </Button>
+            )}
+          </div>
         </form>
       </CardFooter>
     </Card>
@@ -534,6 +564,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
 const ContentPage: React.FC = () => {
   const [chatboxExpanded, setChatboxExpanded] = React.useState<boolean>(false)
+  const [botvisible, setbotvisible] = React.useState<boolean>(true)
 
   const metaDescriptionEl = document.querySelector('meta[name=description]')
   const problemStatement = metaDescriptionEl?.getAttribute('content') as string
@@ -665,15 +696,22 @@ const ContentPage: React.FC = () => {
           apikey={apiKey}
           heandelModel={heandelModel}
           selectedModel={selectedModel}
+          ChatboxExpanded={setChatboxExpanded}
+          Botvisible={setbotvisible}
         />
       )}
-      <div className="flex justify-end">
-        <Button
-          size={'icon'}
-          onClick={() => setChatboxExpanded(!chatboxExpanded)}
-        >
-          <Bot />
-        </Button>
+      <div className="flex justify-center">
+        {botvisible && (
+          <Button
+            size={'icon'}
+            onClick={() => {
+              setChatboxExpanded(true)
+              setbotvisible(false)
+            }}
+          >
+            <Bot className="h-6 w-6" />
+          </Button>
+        )}
       </div>
     </div>
   )
