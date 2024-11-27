@@ -378,11 +378,16 @@ const ChatBox: React.FC<ChatBoxProps> = ({
             </DropdownMenu>
 
             <X
-              className="ml-4 cursor-pointer text-[24px]  min-w-6 min-h-6"
+              className="ml-4 cursor-pointer text-[24px]  min-w-6 min-h-6 rounded-sm"
               onClick={() => {
                 ChatboxExpanded(false)
                 Botvisible(true)
               }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor =
+                  'rgb(185 28 28 / 0.55)')
+              }
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
             />
           </div>
         </div>
