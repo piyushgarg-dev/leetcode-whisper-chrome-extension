@@ -143,9 +143,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
     let programmingLanguage = 'UNKNOWN'
 
-    const changeLanguageButton = document.querySelector(
-      'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
-    )
+    const changeLanguageButton = document.querySelector('#headlessui-popover-button-\\:r1l\\: div button');
     if (changeLanguageButton) {
       if (changeLanguageButton.textContent)
         programmingLanguage = changeLanguageButton.textContent
