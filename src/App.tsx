@@ -18,6 +18,25 @@ import { VALID_MODELS, type ValidModel } from './constants/valid_modals'
 import { HideApiKey } from '@/components/ui/input'
 import { useChromeStorage } from './hooks/useChromeStorage'
 
+const getApiKeyPlaceholder = (model: ValidModel | null): string => {
+  if (!model) return 'Select a model first'
+
+  const modelData = VALID_MODELS.find((m) => m.name === model)
+  if (!modelData) return 'Enter API Key'
+
+  const providers: Record<string, string> = {
+    openai: 'OpenAI',
+    gemini: 'Google',
+    groq: 'Groq',
+    github: 'GitHub',
+  }
+
+  const provider = Object.entries(providers).find(([key]) =>
+    model.startsWith(key)
+  )
+  return provider ? `Enter ${provider[1]} API Key` : 'Enter API Key'
+}
+
 const Popup: React.FC = () => {
   const [apikey, setApikey] = React.useState<string | null>(null)
   const [model, setModel] = React.useState<ValidModel | null>(null)
@@ -139,7 +158,7 @@ const Popup: React.FC = () => {
               <HideApiKey
                 value={apikey || ''}
                 onChange={(e) => setApikey(e.target.value)}
-                placeholder="Enter OpenAI API Key"
+                placeholder={getApiKeyPlaceholder(model)}
                 disabled={!model}
                 required
               />
