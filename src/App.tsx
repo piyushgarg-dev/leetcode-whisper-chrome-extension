@@ -19,11 +19,11 @@ import { HideApiKey } from '@/components/ui/input'
 import { useChromeStorage } from './hooks/useChromeStorage'
 
 const Popup: React.FC = () => {
-  const [apikey, setApikey] = React.useState<string | null>(null)
-  const [model, setModel] = React.useState<ValidModel | null>(null)
-  const [isLoaded, setIsLoaded] = React.useState<boolean>(false)
+  const [apikey, setApikey] = useState<string | null>(null)
+  const [model, setModel] = useState<ValidModel | null>(null)
+  const [isLoaded, setIsLoaded] = useState<boolean>(false)
 
-  const [isloading, setIsloading] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [submitMessage, setSubmitMessage] = useState<{
     state: 'error' | 'success'
     message: string
@@ -31,10 +31,10 @@ const Popup: React.FC = () => {
 
   const [selectedModel, setSelectedModel] = useState<ValidModel>()
 
-  const updatestorage = async (e: React.FormEvent<HTMLFormElement>) => {
+  const updateStorage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
-      setIsloading(true)
+      setIsLoading(true)
 
       const { setKeyModel } = useChromeStorage()
       if (apikey && model) {
@@ -51,7 +51,7 @@ const Popup: React.FC = () => {
         message: error.message,
       })
     } finally {
-      setIsloading(false)
+      setIsLoading(false)
     }
   }
 
@@ -61,9 +61,12 @@ const Popup: React.FC = () => {
 
       const { selectModel, getKeyModel } = useChromeStorage()
 
-      setModel(await selectModel())
-      setSelectedModel(await selectModel())
-      setApikey((await getKeyModel(await selectModel())).apiKey)
+      const selected = await selectModel()
+      setModel(selected)
+      setSelectedModel(selected)
+
+      const apiKeyFromStorage = await getKeyModel(selected)
+      setApikey(apiKeyFromStorage.apiKey)
 
       setIsLoaded(true)
     }
@@ -71,21 +74,23 @@ const Popup: React.FC = () => {
     loadChromeStorage()
   }, [])
 
-  const heandelModel = async (v: ValidModel) => {
+  const handleModelChange = async (v: ValidModel) => {
     if (v) {
       const { setSelectModel, getKeyModel, selectModel } = useChromeStorage()
-      setSelectModel(v)
+      await setSelectModel(v)
       setModel(v)
       setSelectedModel(v)
-      setApikey((await getKeyModel(await selectModel())).apiKey)
+
+      const apiKeyFromStorage = await getKeyModel(await selectModel())
+      setApikey(apiKeyFromStorage.apiKey)
     }
   }
 
   return (
     <div className="relative p-4 w-[350px] bg-background">
       <Show show={isLoaded}>
-        <div className="">
-          <div className="w-full  h-20 overflow-hidden ">
+        <div>
+          <div className="w-full h-20 overflow-hidden">
             <img
               className="mx-auto h-20 w-auto"
               src={leetCode}
@@ -94,7 +99,7 @@ const Popup: React.FC = () => {
             />
           </div>
           <div className="text-center">
-            <h1 className=" font-bold text-3xl text-white">
+            <h1 className="font-bold text-3xl text-white">
               LeetCode <span className="text-whisperOrange">Whisper</span>
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -102,15 +107,15 @@ const Popup: React.FC = () => {
             </p>
           </div>
           <form
-            onSubmit={(e) => updatestorage(e)}
+            onSubmit={updateStorage}
             className="mt-10 flex flex-col gap-2 w-full"
           >
             <div className="space-y-2">
               <label htmlFor="text" className="text-xs text-muted-foreground">
-                select a model
+                Select a model
               </label>
               <Select
-                onValueChange={(v: ValidModel) => heandelModel(v)}
+                onValueChange={handleModelChange}
                 value={selectedModel}
               >
                 <SelectTrigger className="w-full">
@@ -144,13 +149,13 @@ const Popup: React.FC = () => {
                 required
               />
             </div>
-            <Button disabled={isloading} type="submit" className="w-full mt-2">
-              save API Key
+            <Button disabled={isLoading} type="submit" className="w-full mt-2">
+              Save API Key
             </Button>
           </form>
-          {submitMessage ? (
+          {submitMessage && (
             <div
-              className="mt-2 text-center text-sm text-muted-foreground flex items-center justify-center p-2 rounded-sm"
+              className="mt-2 text-center text-sm flex items-center justify-center p-2 rounded-sm"
               style={{
                 color: submitMessage.state === 'error' ? 'red' : 'green',
                 border:
@@ -163,14 +168,8 @@ const Popup: React.FC = () => {
                     : 'rgba(0, 255, 0, 0.1)',
               }}
             >
-              {submitMessage.state === 'error' ? (
-                <p className="text-red-500">{submitMessage.message}</p>
-              ) : (
-                <p className="text-green-500">{submitMessage.message}</p>
-              )}
+              {submitMessage.message}
             </div>
-          ) : (
-            ''
           )}
           <div className="mt-7 flex items-center justify-center">
             <p className="text-sm">
@@ -179,6 +178,7 @@ const Popup: React.FC = () => {
                 href="https://github.com/piyushgarg-dev/leetcode-whisper-chrome-extension/issues/new"
                 className="text-blue-500 hover:underline"
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 Request a feature!
               </a>
