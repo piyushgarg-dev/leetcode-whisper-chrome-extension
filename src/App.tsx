@@ -30,7 +30,7 @@ const Popup: React.FC = () => {
   } | null>(null)
 
   const [selectedModel, setSelectedModel] = useState<ValidModel>()
-
+  const [disableSaveButton, setDisableSaveButton] = useState<boolean>(false)
   const updatestorage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
@@ -45,6 +45,11 @@ const Popup: React.FC = () => {
         state: 'success',
         message: 'API Key saved successfully',
       })
+      // Disable the Save button after success
+      setDisableSaveButton(true)
+
+      // Persist state in Chrome storage
+      chrome.storage.local.set({ disableSaveButton: true })
     } catch (error: any) {
       setSubmitMessage({
         state: 'error',
@@ -65,12 +70,23 @@ const Popup: React.FC = () => {
       setSelectedModel(await selectModel())
       setApikey((await getKeyModel(await selectModel())).apiKey)
 
+      // Load disableSaveButton state from Chrome storage
+      chrome.storage.local.get('disableSaveButton', (result) => {
+        setDisableSaveButton(result.disableSaveButton || false)
+      })
       setIsLoaded(true)
     }
 
     loadChromeStorage()
   }, [])
+  // Enable the Save button if the API key is changed
+  const handleApiKeyChange = () => {
+    // Enable the Save button when the API key changes
+    setDisableSaveButton(false)
 
+    // Clear any previous success or error message
+    setSubmitMessage(null)
+  }
   const heandelModel = async (v: ValidModel) => {
     if (v) {
       const { setSelectModel, getKeyModel, selectModel } = useChromeStorage()
@@ -110,7 +126,9 @@ const Popup: React.FC = () => {
                 select a model
               </label>
               <Select
-                onValueChange={(v: ValidModel) => heandelModel(v)}
+                onValueChange={(value: string) =>
+                  heandelModel(value as unknown as ValidModel)
+                } // Safely cast string to ValidModel
                 value={selectedModel}
               >
                 <SelectTrigger className="w-full">
@@ -138,14 +156,21 @@ const Popup: React.FC = () => {
               </label>
               <HideApiKey
                 value={apikey || ''}
-                onChange={(e) => setApikey(e.target.value)}
+                onChange={(e) => {
+                  setApikey(e.target.value)
+                  handleApiKeyChange()
+                }}
                 placeholder="Enter OpenAI API Key"
                 disabled={!model}
                 required
               />
             </div>
-            <Button disabled={isloading} type="submit" className="w-full mt-2">
-              save API Key
+            <Button
+              disabled={isloading || disableSaveButton}
+              type="submit"
+              className="w-full mt-2"
+            >
+              Save API Key
             </Button>
           </form>
           {submitMessage ? (

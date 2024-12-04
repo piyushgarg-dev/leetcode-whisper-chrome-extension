@@ -7,6 +7,7 @@ import {
   Eraser,
   Send,
   Settings,
+  CircleStop,
 } from 'lucide-react'
 import { Highlight, themes } from 'prism-react-renderer'
 import { Input } from '@/components/ui/input'
@@ -50,13 +51,12 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
+import BeatLoader from 'react-spinners/BeatLoader'
 interface ChatBoxProps {
   visible: boolean
   context: {
@@ -137,78 +137,95 @@ const ChatBox: React.FC<ChatBoxProps> = ({
    * @returns {Promise<void>} A promise that resolves when the AI response generation is complete.
    */
   const handleGenerateAIResponse = async (): Promise<void> => {
-    const modalService = new ModalService()
-
-    modalService.selectModal(model, apikey)
-
-    let programmingLanguage = 'UNKNOWN'
-
-    const changeLanguageButton = document.querySelector(
-      'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
-    )
-    if (changeLanguageButton) {
-      if (changeLanguageButton.textContent)
-        programmingLanguage = changeLanguageButton.textContent
-    }
-    const userCurrentCodeContainer = document.querySelectorAll('.view-line')
-
-    const extractedCode = extractCode(userCurrentCodeContainer)
-
-    const systemPromptModified = SYSTEM_PROMPT.replace(
-      /{{problem_statement}}/gi,
-      context.problemStatement
-    )
-      .replace(/{{programming_language}}/g, programmingLanguage)
-      .replace(/{{user_code}}/g, extractedCode)
-
-    const PCH = parseChatHistory(chatHistory)
-
-    const { error, success } = await modalService.generate({
-      prompt: `${value}`,
-      systemPrompt: systemPromptModified,
-      messages: PCH,
-      extractedCode: extractedCode,
-    })
-
-    if (error) {
-      const errorMessage: ChatHistory = {
-        role: 'assistant',
-        content: error.message,
+    try {
+      // Create and configure ModalService
+      const modalService = new ModalService();
+      setCurrentModalService(modalService);
+      modalService.selectModal(model, apikey);
+  
+      console.log('API Key:', apikey);
+  
+      let programmingLanguage = 'UNKNOWN';
+      const changeLanguageButton = document.querySelector(
+        'button.rounded.items-center.whitespace-nowrap.inline-flex.bg-transparent.dark\\:bg-dark-transparent.text-text-secondary.group'
+      );
+      if (changeLanguageButton && changeLanguageButton.textContent) {
+        programmingLanguage = changeLanguageButton.textContent;
       }
-      await saveChatHistory(problemName, [
-        ...priviousChatHistory,
-        { role: 'user', content: value },
-        errorMessage,
-      ])
-      setPreviousChatHistory((prev) => [...prev, errorMessage])
-      setChatHistory((prev) => {
-        const updatedChatHistory: ChatHistory[] = [...prev, errorMessage]
-        return updatedChatHistory
-      })
-      lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
-
-    if (success) {
-      const res: ChatHistory = {
-        role: 'assistant',
-        content: success,
+  
+      const userCurrentCodeContainer = document.querySelectorAll('.view-line');
+      const extractedCode = extractCode(userCurrentCodeContainer);
+  
+      const systemPromptModified = SYSTEM_PROMPT.replace(
+        /{{problem_statement}}/gi,
+        context.problemStatement
+      )
+        .replace(/{{programming_language}}/g, programmingLanguage)
+        .replace(/{{user_code}}/g, extractedCode);
+  
+      const PCH = parseChatHistory(chatHistory);
+  
+      setIsResponseLoading(true);
+  
+      const { error, success } = await modalService.generate({
+        prompt: value,
+        systemPrompt: systemPromptModified,
+        messages: PCH,
+        extractedCode: extractedCode,
+      });
+  
+      // If generation is stopped or superseded, do nothing
+      if (!error && !success) {
+        console.log('Generation ignored: Stopped or invalidated.');
+        return;
       }
-      await saveChatHistory(problemName, [
-        ...priviousChatHistory,
-        { role: 'user', content: value },
-        res,
-      ])
-      setPreviousChatHistory((prev) => [...prev, res])
-      setChatHistory((prev) => [...prev, res])
-      setValue('')
-      lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
+  
+      // Handle Errors
+      if (error) {
+        console.error('Generation error:', error.message);
+        const errorMessage: ChatHistory = {
+          role: 'assistant',
+          content: error.message,
+        };
+        await saveChatHistory(problemName, [
+          ...priviousChatHistory,
+          { role: 'user', content: value },
+          errorMessage,
+        ]);
+        setPreviousChatHistory((prev) => [...prev, errorMessage]);
+        setChatHistory((prev) => [...prev, errorMessage]);
+        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+  
+      // Handle Success
+      if (success) {
+        console.log('Generation success:', success);
+        const res: ChatHistory = {
+          role: 'assistant',
+          content: success,
+        };
+        await saveChatHistory(problemName, [
+          ...priviousChatHistory,
+          { role: 'user', content: value },
+          res,
+        ]);
+        setPreviousChatHistory((prev) => [...prev, res]);
+        setChatHistory((prev) => [...prev, res]);
+        setValue('');
+        lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch (err) {
+      console.error('Unexpected error in handleGenerateAIResponse:', err);
+    } finally {
+      setIsResponseLoading(false);
+      setTimeout(() => {
+        inputFieldRef.current?.focus();
+      }, 0);
     }
-
-    setIsResponseLoading(false)
-    setTimeout(() => {
-      inputFieldRef.current?.focus()
-    }, 0)
-  }
+  };
+  
+  
 
   const loadInitialChatHistory = async () => {
     const { totalMessageCount, chatHistory, allChatHistory } =
@@ -265,6 +282,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' })
     handleGenerateAIResponse()
   }
+  const [currentModalService, setCurrentModalService] =
+    React.useState<ModalService | null>(null)
+  const handleStopGeneration = () => {
+    if (currentModalService) {
+      currentModalService.stopGeneration() // Stop generation
+      console.log('Generation stopped successfully')
+    }
+  }
 
   if (!visible) return <></>
 
@@ -277,7 +302,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           </div>
           <div>
             <h3 className="font-bold text-lg">Need Help?</h3>
-            <h6 className="font-normal text-xs">Always online</h6>
+            <h6 className="font-normal text-sm">
+              {isResponseLoading ? 'Typing...' : 'Online'}
+            </h6>
           </div>
         </div>
         <DropdownMenu>
@@ -446,11 +473,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                 </>
               </div>
             ))}
-            {isResponseLoading && (
-              <div className={'flex w-max max-w-[75%] flex-col my-2'}>
-                <div className="w-5 h-5 rounded-full animate-pulse bg-primary"></div>
-              </div>
-            )}
+            {isResponseLoading && <BeatLoader color="white" size={10} />}
             <div ref={lastMessageRef} />
           </ScrollArea>
         ) : (
@@ -482,15 +505,27 @@ const ChatBox: React.FC<ChatBoxProps> = ({
             required
             ref={inputFieldRef}
           />
-          <Button
-            type="submit"
-            className="bg-[#fafafa] rounded-lg text-black"
-            size="icon"
-            disabled={value.length === 0}
-          >
-            <Send className="h-4 w-4" />
-            <span className="sr-only">Send</span>
-          </Button>
+          {isResponseLoading ? (
+            <Button
+              type="button"
+              className="bg-[#fafafa] rounded-lg text-black"
+              size="icon"
+              onClick={handleStopGeneration}
+            >
+              <CircleStop />
+              <span className="sr-only">Stop</span>
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              className="bg-[#fafafa] rounded-lg text-black"
+              size="icon"
+              disabled={value.length === 0}
+            >
+              <Send className="h-4 w-4" />
+              <span className="sr-only">Send</span>
+            </Button>
+          )}
         </form>
       </CardFooter>
     </Card>

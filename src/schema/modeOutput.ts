@@ -28,7 +28,7 @@ const SupportedLanguages = [
 ] as const
 
 export const outputSchema = z.object({
-  feedback: z.string(),
+  feedback: z.string().default('No feedback provided'),
   hints: z
     .array(z.string())
     .max(2, 'You can only provide up to 2 hints.')
