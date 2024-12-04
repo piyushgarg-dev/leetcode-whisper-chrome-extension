@@ -58,3 +58,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+.scroll-none::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
