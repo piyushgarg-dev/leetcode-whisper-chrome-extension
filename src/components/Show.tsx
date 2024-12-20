@@ -22,4 +22,5 @@ const Show: React.FC<Props> = ({ show, children }: Props): React.ReactNode => {
     </div>
   )
 }
+
 export default Show
